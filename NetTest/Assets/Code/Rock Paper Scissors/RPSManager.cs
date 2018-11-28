@@ -56,6 +56,29 @@ public class RPSManager : MonoBehaviour
     void fireAttacks()
     {
         Debug.Log(player.currentAttack.type + " V.S " + opponent.currentAttack.type);
+
+        RPSPlayer winner = getRPSWinner();
+        if(winner == player)
+        {
+            Debug.Log("Player wins");
+            opponent.currentLives--;
+
+            if (opponent.currentLives == 0)
+                Debug.Log("Player victory");
+        }
+        else if(winner == opponent)
+        {
+            Debug.Log("Opponent wins");
+
+            player.currentLives--;
+
+            if (player.currentLives == 0)
+                Debug.Log("Opponent victory");
+        }
+        else
+        {
+            Debug.Log("Draw");
+        }
     }
 
     IEnumerator timerCountdown()
@@ -76,6 +99,55 @@ public class RPSManager : MonoBehaviour
                 endSelectionStage();
 
                 yield break;
+            }
+        }
+    }
+
+    RPSPlayer getRPSWinner()
+    {
+        if(player.currentAttack.type == RPSType.ROCK)
+        {
+            if(opponent.currentAttack.type == RPSType.ROCK)
+            {
+                return null;
+            }
+            else if(opponent.currentAttack.type == RPSType.SCISSORS)
+            {
+                return player;
+            }
+            else
+            {
+                return opponent;
+            }
+        }
+        else if(player.currentAttack.type == RPSType.SCISSORS)
+        {
+            if (opponent.currentAttack.type == RPSType.ROCK)
+            {
+                return opponent;
+            }
+            else if (opponent.currentAttack.type == RPSType.SCISSORS)
+            {
+                return null;
+            }
+            else
+            {
+                return player;
+            }
+        }
+        else // paper
+        {
+            if (opponent.currentAttack.type == RPSType.ROCK)
+            {
+                return player;
+            }
+            else if (opponent.currentAttack.type == RPSType.SCISSORS)
+            {
+                return opponent;
+            }
+            else
+            {
+                return null;
             }
         }
     }
