@@ -150,41 +150,31 @@ extern "C"
 				RakNet::RakString rs;
 				RakNet::BitStream bsIn(packet->data, packet->length, true);
 				
+				// Skip the message ID
 				bsIn.IgnoreBytes(sizeof(RakNet::MessageID));
+
+				// Get the time difference between the client and server
 				RakNet::Time dt, ourt, theirt;
 
 				ourt = RakNet::GetTime();
 				bsIn.Read(theirt);
 				dt = ourt - theirt;
-
+				
+				// Construct a new stream containing the info we recieved and the time
 				RakNet::BitStream bsOut;
 				bsOut.Write((RakNet::MessageID)DemoPeerManager::UPDATE_NETWORK_PLAYER);
 				bsOut.Write(dt);
 				bsOut.Write(bsIn);
-				//bsOut.Read(outPut, bsOut.GetNumberOfBytesUsed());
 
-				unsigned char* returnStr = bsIn.GetData();
-				unsigned char* returnStr1 = bsIn.GetData() + 1;
-				unsigned char* returnStr2 = bsIn.GetData() + 2;
-				unsigned char* returnStr3 = bsIn.GetData() + 3;
-				unsigned char* returnStr4 = bsIn.GetData() + 4;
-				unsigned char* returnStr5 = bsIn.GetData() + 5;
-				unsigned char* returnStr6 = bsIn.GetData() + 6;
-				unsigned char* returnStr7 = bsIn.GetData() + 7;
-
+				// Convert the stream to a char* for returning to C#
 				int byteCount = (int) bsOut.GetNumberOfBytesUsed();
-				char* godpls = (char*)malloc(byteCount);
-				//godpls[byteCount] = '\0';
-				bsOut.Read(godpls, byteCount);
-				//for (size_t i = 0; i < bsOut.GetNumberOfBytesUsed(); i++)
-				//{
-				//	godpls[i] = bsOut.GetData() + i;
-				//}
+				char* retData = (char*)malloc(byteCount);
 
-				char* returnThis = (char*)returnStr;
+				bsOut.Read(retData, byteCount);
 
+				// Set the length and return the data
 				*length = (int)byteCount;
-				return godpls;
+				return retData;
 			}
 			break;
 		

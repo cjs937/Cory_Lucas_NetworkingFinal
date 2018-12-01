@@ -64,6 +64,8 @@ public class NetworkManager : MonoBehaviour
             else
                 Debug.Log("Could not connect");
         }
+
+        DontDestroyOnLoad(this);
     }
 
     // Update is called once per frame
