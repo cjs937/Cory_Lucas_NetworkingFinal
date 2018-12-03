@@ -2,17 +2,28 @@
 #include <iostream>
 #include <string>
 #include "egp-net-framework/DemoPeerManager.h"
+#include "egp-raknet-console/GUID.h"
 
 ServerState::ServerState()
 {
-	
+	runLoop = true;
+
+	PlayerData d1;
+	d1.collisionRadius = 1;
+	d1.position = Vector2(0, 0);
+	d1.id.guid = "dfdf";
+	PlayerData d2;
+	d2.collisionRadius = 1;
+	d1.position = Vector2(1, 3);
+	d2.id.guid = "aaaa";
+
+	addPlayerData(d1);
+	addPlayerData(d2);
 }
 
 
 ServerState::~ServerState()
-{
-	
-}
+{}
 
 void ServerState::updateState()
 {
@@ -32,6 +43,7 @@ void ServerState::updateState()
 		//printf("Sending state to players\n");
 		//broadcastState();
 
+		checkWorldCollisions();
 		lastNetworkUpdateMS = currentTimeMS;
 	}
 
@@ -87,11 +99,19 @@ void ServerState::checkWorldCollisions()
 			
 			if (Vector2::Distance(currentPlayer.position, thisPlayer.position) <= currentPlayer.collisionRadius)
 			{
+				std::cout << "works\n";
 				//Collision found
 				continue;
 			}
 		}
+
+		std::cout << "donecheckin";
 	}
+}
+
+void ServerState::addPlayerData(PlayerData _data)
+{
+	dataThisFrame.push_back(_data);
 }
 
 

@@ -115,3 +115,25 @@ DemoPeerManager* DemoPeerManager::getInstance()
 
 	return &instance;
 }
+
+bool DemoPeerManager::checkLatency(RakNet::Time latency)
+{
+	if (latency >= latencyThreshold)
+		return false;
+
+	return true;
+}
+
+RakNet::Time DemoPeerManager::calcLatency(RakNet::Time _timeRecieved, RakNet::Time _timeSent)
+{
+	return _timeRecieved - _timeSent;
+}
+
+RakNet::Time DemoPeerManager::calcLatency(RakNet::BitStream& _stream)
+{
+	RakNet::Time theirT, ourT;
+	ourT = RakNet::GetTime();
+	_stream.Read(theirT);
+	
+	return calcLatency(ourT, theirT);
+}

@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <vector>
+#include <queue>
 #include <chrono>
 #include "egp-raknet-console/PlayerData.h"
 #include "egp-net-framework/Entity.h"
@@ -19,11 +20,9 @@ class ServerState
 private:
 	//DemoState* localState;
 	std::vector<PlayerData> dataThisFrame;
-	InputManager* mpInputManager;
 
 	bool runLoop;
-	bool sendGameState;
-	int updatesRecieved;
+	int latencyThreshold;
 
 	//Timing
 	std::chrono::time_point<std::chrono::system_clock> lastTime;
@@ -40,10 +39,11 @@ public:
 
 	void updateState();
 
-	inline bool shouldSendState() { return sendGameState; };
-	inline bool shouldSendState(bool _flag) { return sendGameState = _flag; };
+	//inline bool shouldSendState() { return sendGameState; };
+	//inline bool shouldSendState(bool _flag) { return sendGameState = _flag; };
 	void exitLoop();
 	bool shouldLoop();
 	ServerState* getInstance();
+	void addPlayerData(PlayerData _data);
 };
 

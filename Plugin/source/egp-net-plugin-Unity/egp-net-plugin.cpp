@@ -87,7 +87,7 @@ extern "C"
 
 	bool getNextEntityUpdate(int* guidLength, char** guid, Vector3* position, Vector3* destination, RakNet::Time* latency)
 	{
-		if (entityUpdates->size == 0)
+		if (entityUpdates->size() == 0)
 			return false;
 
 		EntityUpdate* currUpdate = entityUpdates->front();

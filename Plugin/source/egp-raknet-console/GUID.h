@@ -1,13 +1,13 @@
 #pragma once
 
-struct GUID
+struct ClientID
 {
-	GUID();
-	GUID(int _length, char* _guid);
-	~GUID();
+	ClientID();
+	ClientID(int _length, char* _guid);
+	~ClientID();
 
 	int guidLength;
 	char* guid;
 
-	bool operator ==(GUID const &_compareTo) const;
+	bool operator ==(ClientID const &_compareTo) const;
 };

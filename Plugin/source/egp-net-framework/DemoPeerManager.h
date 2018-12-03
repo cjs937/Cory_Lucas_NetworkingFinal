@@ -60,6 +60,8 @@ public:
 	// Time between ticks in MS - only used for sending
 	const float networkTickRateMS = 100.0f;
 
+	RakNet::Time latencyThreshold = 1000;
+
 	RakNet::RakPeerInterface* getPeer()
 	{
 		return mp_peer;
@@ -67,6 +69,15 @@ public:
 
 	// Our functions called from the plugin
 	void sendEntity(RakNet::BitStream* bs, int peer = -1) const;
+
+	bool checkLatency(RakNet::Time latency);
+
+	static RakNet::Time calcLatency(RakNet::Time _timeRecieved, RakNet::Time _timeSent);
+
+	///<summary>
+	///Assumes latency data is next in stream. MessageID and any other previous data must be stripped
+	///</summary>
+	static RakNet::Time calcLatency(RakNet::BitStream& _stream); 
 };
 
 

@@ -10,7 +10,7 @@ int main(int const argc, char const *const *const argv)
 		return -1;
 	}
 
-	while (1)
+	while (state->shouldLoop())
 	{
 		state->updateState();
 	}
