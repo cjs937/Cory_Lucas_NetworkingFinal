@@ -29,10 +29,27 @@ struct GameMessageData
 
 #pragma pack (pop)
 
+struct EntityUpdate
+{
+	int guidLength;
+	char* guid;
+	Vector3 position;
+	Vector3 destination;
+	RakNet::Time latency;
+};
+
+struct CombatUpdate
+{
+	// combat info for the client
+};
+
 // create and return instance of peer interface
 RakNet::RakPeerInterface *peer;
 
 DemoPeerManager* peerManager;
+
+std::queue<EntityUpdate*>* entityUpdates;
+std::queue<CombatUpdate*>* combatUpdates;
 
 extern "C"
 {
@@ -61,20 +78,40 @@ extern "C"
 
 		peer = peerManager->getPeer();
 
+		entityUpdates = new std::queue<EntityUpdate*>();
+		combatUpdates = new std::queue<CombatUpdate*>();
+
 		return true;
 
 	}
 
+	bool getNextEntityUpdate(int* guidLength, char** guid, Vector3* position, Vector3* destination, RakNet::Time* latency)
+	{
+		if (entityUpdates->size == 0)
+			return false;
+
+		EntityUpdate* currUpdate = entityUpdates->front();
+		entityUpdates->pop();
+
+		*guidLength = currUpdate->guidLength;
+		*guid = currUpdate->guid;
+		*position = currUpdate->position;
+		*destination = currUpdate->destination;
+		*latency = currUpdate->latency;
+
+		return true;
+	}
+
 	__declspec(dllexport)	// tmp linker flag, forces lib to exist
-	char* handlePacket(int* length)
+	int handlePacket()
 	{
 		RakNet::Packet* packet;
 
 		packet = peer->Receive();
 		if (!packet)
 		{
-			*length = sizeof("nopacket");
-			return "nopacket";
+			// No packet
+			return -1;
 		}
 		switch (packet->data[0])
 		{
@@ -136,8 +173,7 @@ extern "C"
 		
 				char* returnThis = (char*)rs.C_String();
 		
-				*length = (int) strlen(returnThis);
-				return returnThis;
+				return (int) DemoPeerManager::ID_GAME_MESSAGE_1;
 		
 				// ****TO-DO: read packet without using bitstream
 		
@@ -153,28 +189,48 @@ extern "C"
 				// Skip the message ID
 				bsIn.IgnoreBytes(sizeof(RakNet::MessageID));
 
+				EntityUpdate* update = new EntityUpdate();
+
 				// Get the time difference between the client and server
 				RakNet::Time dt, ourt, theirt;
 
 				ourt = RakNet::GetTime();
 				bsIn.Read(theirt);
 				dt = ourt - theirt;
+
+				update->latency = dt;
+
+				// Get the GUID length and allocate that much space
+				bsIn.Read(update->guidLength);
+				update->guid = (char*)malloc(update->guidLength);
+
+				for (int i = 0; i < update->guidLength; i++)
+				{
+					bsIn.Read(update->guid[i]);
+				}
+
+				bsIn.Read(update->position);
+				bsIn.Read(update->destination);
+
+				entityUpdates->push(update);
+
+				return (int)DemoPeerManager::UPDATE_NETWORK_PLAYER;
 				
 				// Construct a new stream containing the info we recieved and the time
-				RakNet::BitStream bsOut;
-				bsOut.Write((RakNet::MessageID)DemoPeerManager::UPDATE_NETWORK_PLAYER);
-				bsOut.Write(dt);
-				bsOut.Write(bsIn);
+				//RakNet::BitStream bsOut;
+				//bsOut.Write((RakNet::MessageID)DemoPeerManager::UPDATE_NETWORK_PLAYER);
+				//bsOut.Write(dt);
+				//bsOut.Write(bsIn);
 
 				// Convert the stream to a char* for returning to C#
-				int byteCount = (int) bsOut.GetNumberOfBytesUsed();
-				char* retData = (char*)malloc(byteCount);
-
-				bsOut.Read(retData, byteCount);
-
-				// Set the length and return the data
-				*length = (int)byteCount;
-				return retData;
+				//int byteCount = (int) bsOut.GetNumberOfBytesUsed();
+				//char* retData = (char*)malloc(byteCount);
+				//
+				//bsOut.Read(retData, byteCount);
+				//
+				//// Set the length and return the data
+				//*length = (int)byteCount;
+				//return retData;
 			}
 			break;
 		
@@ -184,12 +240,9 @@ extern "C"
 		}
 
 		peer->DeallocatePacket(packet);
-		char tmpStr[] = "nodata.";
-		tmpStr[7] = packet->data[0];
-		char* toSend = (char*)malloc(strlen(tmpStr) + 1);
-		strcpy(toSend, tmpStr);
-		*length = sizeof("nodata.");
-		return toSend;
+
+		// Unknown packet
+		return -2;
 	}
 
 	__declspec(dllexport)	// tmp linker flag, forces lib to exist
@@ -220,9 +273,6 @@ extern "C"
 		bsOut.Write(destination);
 
 		peerManager->sendEntity(&bsOut);
-
-		//peer->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, 
-		//	RakNet::SystemAddress(peerManager->serverAddress.c_str()), false);
 
 		return true;
 	}

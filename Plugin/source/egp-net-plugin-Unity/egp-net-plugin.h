@@ -13,6 +13,7 @@
 
 #include "egp-net-plugin-config.h"
 
+#include <queue>
 
 
 #endif	// !_EGP_NET_PLUGIN_H_

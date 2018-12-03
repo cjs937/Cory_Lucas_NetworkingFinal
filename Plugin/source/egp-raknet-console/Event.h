@@ -16,6 +16,10 @@
 enum EventType
 {
 	DEFAULT_EVENT = -1,
+	ENTITY_UPDATE,
+	COMBAT_START,
+	COMBAT_ENEMY_SELECT,
+	COMBAT_END
 };
 
 class Event
