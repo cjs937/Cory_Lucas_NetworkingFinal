@@ -2,7 +2,7 @@
 #include <map>
 #include <vector>
 #include <chrono>
-
+#include "egp-raknet-console/PlayerData.h"
 #include "egp-net-framework/Entity.h"
 
 //class DemoState;
@@ -18,7 +18,7 @@ class ServerState
 {
 private:
 	//DemoState* localState;
-
+	std::vector<PlayerData> dataThisFrame;
 	InputManager* mpInputManager;
 
 	bool runLoop;
@@ -29,6 +29,8 @@ private:
 	std::chrono::time_point<std::chrono::system_clock> lastTime;
 	std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> lastTimeMS;
 	std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> lastNetworkUpdateMS;
+
+	void checkWorldCollisions();
 
 public:
 	ServerState();

@@ -72,6 +72,29 @@ bool ServerState::init()
 
 }
 
+void ServerState::checkWorldCollisions()
+{
+	for (int i = 0; i < dataThisFrame.size(); ++i)
+	{
+		PlayerData currentPlayer = dataThisFrame[i];
+
+		for (int j = i + 1; j < dataThisFrame.size(); ++j)
+		{
+			PlayerData thisPlayer = dataThisFrame[j];
+
+			if (currentPlayer.id == thisPlayer.id)
+				continue;
+			
+			if (Vector2::Distance(currentPlayer.position, thisPlayer.position) <= currentPlayer.collisionRadius)
+			{
+				//Collision found
+				continue;
+			}
+		}
+	}
+}
+
+
 ServerState* ServerState::getInstance()
 {
 	static ServerState instance;

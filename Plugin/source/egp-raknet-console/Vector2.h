@@ -14,4 +14,6 @@ struct Vector2
 	void operator -=(Vector2 const &_right);
 
 	Vector2 operator *(float const &_right) const;
+
+	static float Distance(Vector2 const &_left, Vector2 const &_right);
 };
