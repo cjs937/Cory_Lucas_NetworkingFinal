@@ -40,7 +40,9 @@ struct EntityUpdate
 
 struct CombatUpdate
 {
-	// combat info for the client
+	int guidLength;
+	char* opponetGuid;
+	int action;
 };
 
 // create and return instance of peer interface
@@ -85,6 +87,7 @@ extern "C"
 
 	}
 
+	__declspec(dllexport)	// tmp linker flag, forces lib to exist
 	bool getNextEntityUpdate(int* guidLength, char** guid, Vector3* position, Vector3* destination, RakNet::Time* latency)
 	{
 		if (entityUpdates->size() == 0)
@@ -98,6 +101,22 @@ extern "C"
 		*position = currUpdate->position;
 		*destination = currUpdate->destination;
 		*latency = currUpdate->latency;
+
+		return true;
+	}
+
+	__declspec(dllexport)	// tmp linker flag, forces lib to exist
+	bool getNextCombatUpdate(int* guidLength, char** opponetGuid, int* action)
+	{
+		if (combatUpdates->size() == 0)
+			return false;
+
+		CombatUpdate* currUpdate = combatUpdates->front();
+		combatUpdates->pop();
+
+		*guidLength = currUpdate->guidLength;
+		*opponetGuid = currUpdate->opponetGuid;
+		*action = currUpdate->action;
 
 		return true;
 	}
@@ -242,7 +261,7 @@ extern "C"
 		peer->DeallocatePacket(packet);
 
 		// Unknown packet
-		return -2;
+		return packet->data[0];
 	}
 
 	__declspec(dllexport)	// tmp linker flag, forces lib to exist
