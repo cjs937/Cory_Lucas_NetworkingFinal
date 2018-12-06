@@ -1,3 +1,6 @@
+#ifndef CLIENT_ID_H
+#define CLIENT_ID_H
+
 #pragma once
 
 struct ClientID
@@ -11,3 +14,5 @@ struct ClientID
 
 	bool operator ==(ClientID const &_compareTo) const;
 };
+
+#endif // !CLIENT_ID_H

@@ -1,4 +1,4 @@
-#include "GUID.h"
+#include "ClientID.h"
 #include <string>
 
 ClientID::ClientID(): guidLength(0), guid(nullptr)

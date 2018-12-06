@@ -23,9 +23,7 @@
     <ClInclude Include="..\..\..\source\egp-raknet-console\EventListener.h" />
     <ClInclude Include="..\..\..\source\egp-raknet-console\EventQueue.h" />
     <ClInclude Include="..\..\..\source\egp-raknet-console\EventSystem.h" />
-    <ClInclude Include="..\..\..\source\egp-raknet-console\GUID.h" />
     <ClInclude Include="..\..\..\source\egp-raknet-console\InputManager.h" />
-    <ClInclude Include="..\..\..\source\egp-raknet-console\PlayerData.h" />
     <ClInclude Include="..\..\..\source\egp-raknet-console\Unit.h" />
     <ClInclude Include="..\..\..\source\egp-raknet-console\UnitManager.h" />
     <ClInclude Include="..\..\..\source\egp-raknet-console\Vector2.h" />
@@ -36,9 +34,7 @@
     <ClCompile Include="..\..\..\source\egp-raknet-console\EventListener.cpp" />
     <ClCompile Include="..\..\..\source\egp-raknet-console\EventQueue.cpp" />
     <ClCompile Include="..\..\..\source\egp-raknet-console\EventSystem.cpp" />
-    <ClCompile Include="..\..\..\source\egp-raknet-console\GUID.cpp" />
     <ClCompile Include="..\..\..\source\egp-raknet-console\inputManager.cpp" />
-    <ClCompile Include="..\..\..\source\egp-raknet-console\PlayerData.cpp" />
     <ClCompile Include="..\..\..\source\egp-raknet-console\Unit.cpp" />
     <ClCompile Include="..\..\..\source\egp-raknet-console\UnitManager.cpp" />
     <ClCompile Include="..\..\..\source\egp-raknet-console\Vector2.cpp" />

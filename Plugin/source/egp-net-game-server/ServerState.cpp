@@ -2,23 +2,11 @@
 #include <iostream>
 #include <string>
 #include "egp-net-framework/DemoPeerManager.h"
-#include "egp-raknet-console/GUID.h"
+//#include "egp-raknet-console/ClientID.h"
 
 ServerState::ServerState()
 {
 	runLoop = true;
-
-	PlayerData d1;
-	d1.collisionRadius = 1;
-	d1.position = Vector2(0, 0);
-	d1.id.guid = "dfdf";
-	PlayerData d2;
-	d2.collisionRadius = 1;
-	d1.position = Vector2(1, 3);
-	d2.id.guid = "aaaa";
-
-	addPlayerData(d1);
-	addPlayerData(d2);
 }
 
 
@@ -80,6 +68,18 @@ bool ServerState::init()
 	lastTimeMS = std::chrono::time_point_cast<std::chrono::milliseconds>(lastTime);
 	lastNetworkUpdateMS = std::chrono::time_point_cast<std::chrono::milliseconds>(lastTime);
 
+	PlayerData* d1 = new PlayerData();
+	d1->collisionRadius = 5;
+	d1->position = Vector3(1, 3);
+	d1->id.guid = "dfdf";
+	PlayerData* d2 = new PlayerData();
+	d2->collisionRadius = 1;
+	d1->position = Vector3(1, 7);
+	d2->id.guid = "aaaa";
+
+	addPlayerData(d1);
+	addPlayerData(d2);
+
 	return true;
 
 }
@@ -88,16 +88,16 @@ void ServerState::checkWorldCollisions()
 {
 	for (int i = 0; i < dataThisFrame.size(); ++i)
 	{
-		PlayerData currentPlayer = dataThisFrame[i];
+		PlayerData* currentPlayer = dataThisFrame[i];
 
 		for (int j = i + 1; j < dataThisFrame.size(); ++j)
 		{
-			PlayerData thisPlayer = dataThisFrame[j];
+			PlayerData* thisPlayer = dataThisFrame[j];
 
-			if (currentPlayer.id == thisPlayer.id)
+			if (currentPlayer->id == thisPlayer->id)
 				continue;
 			
-			if (Vector2::Distance(currentPlayer.position, thisPlayer.position) <= currentPlayer.collisionRadius)
+			if (Vector3::Distance(currentPlayer->position, thisPlayer->position) <= currentPlayer->collisionRadius)
 			{
 				std::cout << "works\n";
 				//Collision found
@@ -105,11 +105,11 @@ void ServerState::checkWorldCollisions()
 			}
 		}
 
-		std::cout << "donecheckin";
+		std::cout << "donecheckin\n";
 	}
 }
 
-void ServerState::addPlayerData(PlayerData _data)
+void ServerState::addPlayerData(PlayerData* _data)
 {
 	dataThisFrame.push_back(_data);
 }

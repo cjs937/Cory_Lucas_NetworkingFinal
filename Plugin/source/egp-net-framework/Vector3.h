@@ -16,5 +16,7 @@ struct Vector3
 	void operator -=(Vector3 const &_right);
 
 	Vector3 operator *(float const &_right) const;
+
+	static float Distance(Vector3 const &_left, Vector3 const &_right);
 };
 #pragma pack (pop)

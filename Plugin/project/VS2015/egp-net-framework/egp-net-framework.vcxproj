@@ -27,12 +27,15 @@
     <ClInclude Include="..\..\..\include\egp-net\fw\utils\egpInput.h" />
     <ClInclude Include="..\..\..\include\egp-net\fw\utils\egpThread.h" />
     <ClInclude Include="..\..\..\include\egp-net\fw\utils\egpTimer.h" />
+    <ClInclude Include="..\..\..\source\egp-net-framework\ClientID.h" />
     <ClInclude Include="..\..\..\source\egp-net-framework\DemoPeerManager.h" />
     <ClInclude Include="..\..\..\source\egp-net-framework\Entity.h" />
+    <ClInclude Include="..\..\..\source\egp-net-framework\PlayerData.h" />
     <ClInclude Include="..\..\..\source\egp-net-framework\Vector2.h" />
     <ClInclude Include="..\..\..\source\egp-net-framework\Vector3.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\egp-net-framework\ClientID.cpp" />
     <ClCompile Include="..\..\..\source\egp-net-framework\DemoPeerManager.cpp" />
     <ClCompile Include="..\..\..\source\egp-net-framework\egp-net\egp-net.cpp" />
     <ClCompile Include="..\..\..\source\egp-net-framework\egp-net\fw\egpDummyClass.cpp" />
@@ -40,6 +43,7 @@
     <ClCompile Include="..\..\..\source\egp-net-framework\egp-net\fw\egpNetSerializableDataExample.cpp" />
     <ClCompile Include="..\..\..\source\egp-net-framework\egp-net\fw\utils\egpThread.c" />
     <ClCompile Include="..\..\..\source\egp-net-framework\Entity.cpp" />
+    <ClCompile Include="..\..\..\source\egp-net-framework\PlayerData.cpp" />
     <ClCompile Include="..\..\..\source\egp-net-framework\Vector2.cpp" />
     <ClCompile Include="..\..\..\source\egp-net-framework\Vector3.cpp" />
   </ItemGroup>

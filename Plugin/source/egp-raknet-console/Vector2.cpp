@@ -39,12 +39,12 @@ Vector2 Vector2::operator*(float const & _right) const
 	return Vector2(x * _right, y * _right);
 }
 
-float Vector2::Distance(Vector2 const &_left, Vector2 const &_right)
-{
-	float x = _right.x - _left.x;
-	x *= x;
-	float y = _right.y - _left.y;
-	y *= y;
-
-	return (float)sqrt(x + y);
-}
+//float Vector2::Distance(Vector2 const &_left, Vector2 const &_right)
+//{
+//	float x = _right.x - _left.x;
+//	x *= x;
+//	float y = _right.y - _left.y;
+//	y *= y;
+//
+//	return (float)sqrt(x + y);
+//}

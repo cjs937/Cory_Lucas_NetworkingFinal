@@ -3,7 +3,7 @@
 #include <vector>
 #include <queue>
 #include <chrono>
-#include "egp-raknet-console/PlayerData.h"
+#include "egp-net-framework/PlayerData.h"
 #include "egp-net-framework/Entity.h"
 
 //class DemoState;
@@ -19,7 +19,7 @@ class ServerState
 {
 private:
 	//DemoState* localState;
-	std::vector<PlayerData> dataThisFrame;
+	std::vector<PlayerData*> dataThisFrame;
 
 	bool runLoop;
 	int latencyThreshold;
@@ -44,6 +44,6 @@ public:
 	void exitLoop();
 	bool shouldLoop();
 	ServerState* getInstance();
-	void addPlayerData(PlayerData _data);
+	void addPlayerData(PlayerData* _data);
 };
 
