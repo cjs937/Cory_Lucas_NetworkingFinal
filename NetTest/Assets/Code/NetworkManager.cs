@@ -14,6 +14,7 @@ enum MessageID
     ID_GAME_MESSAGE_1,
     UPDATE_NETWORK_PLAYER, // Client sends server a single entity
     UPDATE_GAME_STATE, // Server sends client update of all current entities
+    UPDATE_COMBAT_STATE,
 
     // ****TO-DO: implement general identifiers
     // these should be peer-type-agnostic, i.e. either server or client
@@ -41,16 +42,21 @@ public class NetworkManager : MonoBehaviour
     [DllImport("egp-net-plugin-Unity")]
     private static extern bool shutdownNetworking();
     [DllImport("egp-net-plugin-Unity")]
-    private static extern IntPtr handlePacket(ref int length);
+    private static extern int handlePacket();
     [DllImport("egp-net-plugin-Unity")]
     private static extern IntPtr plsreturn(ref int length);
     [DllImport("egp-net-plugin-Unity")]
     private static extern bool sendEntityToServer(int guidSize, byte[] guid, SimpleVector3 position, SimpleVector3 destination);
+    [DllImport("egp-net-plugin-Unity")]
+    private static extern bool getNextEntityUpdate(ref int guidLength, ref byte[] guid, ref SimpleVector3 position, ref SimpleVector3 destination, ref UInt64 latency);
 
     // We want to send data to the server 10 times a second
     private const float networkTickRateMS = 100.0f / 1000.0f;
     //private const float networkTickRateMS = 500.0f / 1000.0f; //Debug: twice a second
     private float lastNetworkUpdate;
+
+    private int entityUpdatesWaiting;
+    private int combatUpdatesWaiting;
 
     // Start is called before the first frame update
     void Start()
@@ -109,85 +115,105 @@ public class NetworkManager : MonoBehaviour
 
     private void HandleNetworking()
     {
-        int length = 0;
-        IntPtr returnPtr = handlePacket(ref length);
+        int packetType = handlePacket();
 
-        byte[] returnData = new byte[length];
-        int index = 0;
-
-        Marshal.Copy(returnPtr, returnData, 0, length);
-
-        if (returnData.Length == 0 || returnData.Length == 9 || returnData[0] == 110)
-            return;
-        
-        Debug.Log("Len: " + length);
-        Debug.Log("Ret0 " + returnData[0]);
-
-        int messageID = returnData[index];
-        index++;
-
-        //Debug.Log(messageID);
-        switch (messageID)
+        if (packetType == -1)
         {
-           case (int)MessageID.UPDATE_NETWORK_PLAYER:
-           {
-                Debug.Log("Update Network Player");
-                    
-                UInt64 latency = bytesToUInt64(returnData, index);
-                Debug.Log(latency);
-                index += 8;
-
-                index += 3;
-                int guidLength = returnData[index];
-                index++;
-                
-                Guid identifer = bytesToGuid(returnData, index, guidLength);
-                index += guidLength;
-                
-                Vector3 position = new Vector3();
-                position.z = bytesToFloat(returnData, index);
-                index += 4;
-                position.y = bytesToFloat(returnData, index);
-                index += 4;
-                position.x = bytesToFloat(returnData, index);
-                index += 4;
-                
-                Vector3 destination = new Vector3();
-                destination.z = bytesToFloat(returnData, index);
-                index += 4;
-                destination.y = bytesToFloat(returnData, index);
-                index += 4;
-                destination.x = bytesToFloat(returnData, index);
-                index += 4;
-                
-                EntityPacket newPacket;
-                newPacket.identifier = identifer;
-                newPacket.position = position;
-                newPacket.destination = destination;
-                newPacket.latency = 0.0f; // get latency from returnData
-
-                //Debug.Log(identifer);
-
-                if (sceneManager)
-                {
-                    SceneManager.entityPackets.Enqueue(newPacket);
-                }
-
-                Debug.Log("indexfinal: " + index);
-            }
-                break;
-            case 110: // If there isn't nodata.
-            {
-            }
-                break;
-            default:
-            {
-                Debug.Log("Unknown MessageID: " + messageID);
-            }
-                break;
+            return;
+        }
+        else if (packetType == (int) MessageID.UPDATE_GAME_STATE)
+        {
+            entityUpdatesWaiting++;
+        }
+        else if (packetType == (int) MessageID.UPDATE_COMBAT_STATE)
+        {
+            combatUpdatesWaiting++;
         }
         
+        Debug.Log("Unknown packet recieved: " + packetType);
     }
+
+    //private void HandleNetworking()
+    //{
+    //    int length = 0;
+    //    IntPtr returnPtr = handlePacket(ref length);
+    //
+    //    byte[] returnData = new byte[length];
+    //    int index = 0;
+    //
+    //    Marshal.Copy(returnPtr, returnData, 0, length);
+    //
+    //    if (returnData.Length == 0 || returnData.Length == 9 || returnData[0] == 110)
+    //        return;
+    //    
+    //    Debug.Log("Len: " + length);
+    //    Debug.Log("Ret0 " + returnData[0]);
+    //
+    //    int messageID = returnData[index];
+    //    index++;
+    //
+    //    //Debug.Log(messageID);
+    //    switch (messageID)
+    //    {
+    //       case (int)MessageID.UPDATE_NETWORK_PLAYER:
+    //       {
+    //            Debug.Log("Update Network Player");
+    //                
+    //            UInt64 latency = bytesToUInt64(returnData, index);
+    //            Debug.Log(latency);
+    //            index += 8;
+    //
+    //            index += 3;
+    //            int guidLength = returnData[index];
+    //            index++;
+    //            
+    //            Guid identifer = bytesToGuid(returnData, index, guidLength);
+    //            index += guidLength;
+    //            
+    //            Vector3 position = new Vector3();
+    //            position.z = bytesToFloat(returnData, index);
+    //            index += 4;
+    //            position.y = bytesToFloat(returnData, index);
+    //            index += 4;
+    //            position.x = bytesToFloat(returnData, index);
+    //            index += 4;
+    //            
+    //            Vector3 destination = new Vector3();
+    //            destination.z = bytesToFloat(returnData, index);
+    //            index += 4;
+    //            destination.y = bytesToFloat(returnData, index);
+    //            index += 4;
+    //            destination.x = bytesToFloat(returnData, index);
+    //            index += 4;
+    //            
+    //            EntityPacket newPacket;
+    //            newPacket.identifier = identifer;
+    //            newPacket.position = position;
+    //            newPacket.destination = destination;
+    //            newPacket.latency = 0.0f; // get latency from returnData
+    //
+    //            //Debug.Log(identifer);
+    //
+    //            if (sceneManager)
+    //            {
+    //                SceneManager.entityPackets.Enqueue(newPacket);
+    //            }
+    //
+    //            Debug.Log("indexfinal: " + index);
+    //        }
+    //            break;
+    //        case 110: // If there isn't nodata.
+    //        {
+    //        }
+    //            break;
+    //        default:
+    //        {
+    //            Debug.Log("Unknown MessageID: " + messageID);
+    //        }
+    //            break;
+    //    }
+    //    
+    //}
 
     private ulong bytesToUInt64(byte[] data, int startIndex)
     {

@@ -46,5 +46,5 @@ float Vector2::Distance(Vector2 const &_left, Vector2 const &_right)
 	float y = _right.y - _left.y;
 	y *= y;
 
-	return sqrt(x + y);
+	return (float) sqrt(x + y);
 }
