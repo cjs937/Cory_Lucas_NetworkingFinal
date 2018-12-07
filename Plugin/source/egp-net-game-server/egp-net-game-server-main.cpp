@@ -3,7 +3,7 @@
 
 int main(int const argc, char const *const *const argv)
 {
-	ServerState* state = new ServerState();
+	ServerState* state = ServerState::getInstance();
 
 	if (!state->init())
 	{

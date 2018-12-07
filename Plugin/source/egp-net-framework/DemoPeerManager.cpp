@@ -13,6 +13,7 @@
 #include "Vector3.h"
 #include <iostream>
 #include <mutex>
+#include "../egp-net-game-server/ServerState.h"
 
 int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const unsigned int packetIndex) const
 {
@@ -63,25 +64,7 @@ int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const uns
 
 		sendEntity(&stream, mp_peer->GetIndexFromSystemAddress(packet->systemAddress));
 		
-		// Uncomment when the server starts tracking entities
-		//
-		//stream.IgnoreBytes(sizeof((char)UPDATE_NETWORK_PLAYER));
-		//
-		//int guidLength;
-		//Vector3 position;
-		//Vector3 destination;
-		//	
-		//stream.Read(guidLength);
-		//char* guid = new char[guidLength];
-		//
-		//stream.Read(guid, guidLength);
-		//
-		//stream.Read(position);
-		//stream.Read(destination);
-		//
-		//printf("GUID: %s\nPosition: %f, %f, %f\nDestination: %f, %f, %f",
-		//	guid, position.x, position.y, position.z,
-		//	destination.x, destination.y, destination.z);
+		ServerState::getInstance()->addPlayerData(packet);
 
 		std::cout << "Done" << std::endl;
 	}

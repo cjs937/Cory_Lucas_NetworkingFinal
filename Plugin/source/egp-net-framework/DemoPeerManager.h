@@ -33,7 +33,9 @@ public:
 		ID_GAME_MESSAGE_1,
 		UPDATE_NETWORK_PLAYER, // Client sends server a single entity
 		UPDATE_GAME_STATE, // Server sends client update of all current entities
-
+		PLAYER_COLLISION,
+		PLAYER_WIN_ROUND,
+		PLAYER_WIN_MATCH,
 		// ****TO-DO: implement general identifiers
 		// these should be peer-type-agnostic, i.e. either server or client
 		// some suggestions: 

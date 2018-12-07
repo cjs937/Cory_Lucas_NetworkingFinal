@@ -3,6 +3,7 @@
 
 #pragma once
 
+#pragma pack (push, 1)
 struct ClientID
 {
 	ClientID();
@@ -14,5 +15,5 @@ struct ClientID
 
 	bool operator ==(ClientID const &_compareTo) const;
 };
-
+#pragma pack(pop)
 #endif // !CLIENT_ID_H

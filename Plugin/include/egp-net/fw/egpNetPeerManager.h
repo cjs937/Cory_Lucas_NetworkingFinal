@@ -93,14 +93,7 @@ protected:
 	virtual int ProcessPacket(const RakNet::Packet *const packet, const unsigned int packetIndex) const;
 
 
-	// packet management utilities: wrappers for functionalities in peer
-	// send packet
-	//	bs: pointer to bitstream
-	//	connectionIndex: index of connected peer (pass -1 for none)
-	//	broadcast: if true, sends to all but specified connection; if false, sends to only specified connection
-	//	reliable: set reliability of packet
-	// return leading message identifier
-	int SendPacket(const RakNet::BitStream *bs, const short connectionIndex, const bool broadcast, const bool reliable) const;
+
 
 
 	// utility to write time stamps: writes ID_TIMESTAMP and two time stamps
@@ -169,6 +162,14 @@ public:
 	// return port
 	static unsigned short GetPort(const unsigned short portOffset = 0);
 
+	// packet management utilities: wrappers for functionalities in peer
+	// send packet
+	//	bs: pointer to bitstream
+	//	connectionIndex: index of connected peer (pass -1 for none)
+	//	broadcast: if true, sends to all but specified connection; if false, sends to only specified connection
+	//	reliable: set reliability of packet
+	// return leading message identifier
+	int SendPacket(const RakNet::BitStream *bs, const short connectionIndex, const bool broadcast, const bool reliable) const;
 };
 
 

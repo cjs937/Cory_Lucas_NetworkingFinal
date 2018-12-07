@@ -12,11 +12,14 @@ public:
 	PlayerData(ClientID _id, Vector3 _position, Vector3 _targetPosition, float _collisionRadius, bool inCombat, int currentAttack = -1);
 	~PlayerData();
 
+	bool unresolved;
+
 	ClientID id;
 	Vector3 position;
-	Vector3 targetPosition;
+	Vector3 destination;
 	float collisionRadius;
 	bool inCombat;
+	int numLives;
 	int currentAttack;
 };
 

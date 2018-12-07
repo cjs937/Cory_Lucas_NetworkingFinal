@@ -1,4 +1,4 @@
-/*
+ /*
 	EGP Networking: Plugin Interface/Wrapper
 	Dan Buckstein
 	October 2018
@@ -273,7 +273,7 @@ extern "C"
 	}
 
 	__declspec(dllexport)	// tmp linker flag, forces lib to exist
-	bool sendEntityToServer(int guidLength, char* guid, Vector3 position, Vector3 destination)
+	bool sendEntityToServer(int guidLength, char* guid, Vector3 position, Vector3 destination, float collisionRadius, bool inCombat = false, int currentAttack = 0)
 	{
 		RakNet::BitStream bsOut;
 		bsOut.Write((RakNet::MessageID)DemoPeerManager::UPDATE_NETWORK_PLAYER);
@@ -290,6 +290,9 @@ extern "C"
 
 		bsOut.Write(position);
 		bsOut.Write(destination);
+		bsOut.Write(collisionRadius);
+		bsOut.Write(inCombat);
+		bsOut.Write(currentAttack);
 
 		peerManager->sendEntity(&bsOut);
 
