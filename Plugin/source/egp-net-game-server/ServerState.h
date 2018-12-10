@@ -15,7 +15,7 @@ struct ClientID;
 namespace RakNet
 {
 	struct Packet;
-	struct BitStream;
+	class BitStream;
 }
 
 class ServerState

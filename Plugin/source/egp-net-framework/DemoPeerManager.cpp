@@ -64,7 +64,11 @@ int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const uns
 
 		sendEntity(&stream, mp_peer->GetIndexFromSystemAddress(packet->systemAddress));
 		
-		ServerState::getInstance()->addPlayerData(packet);
+		RakNet::BitStream stream;
+
+		stream.IgnoreBytes(sizeof(RakNet::MessageID));
+
+		ServerState::getInstance()->addPlayerData(stream);
 
 		std::cout << "Done" << std::endl;
 	}
