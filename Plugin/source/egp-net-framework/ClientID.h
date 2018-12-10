@@ -3,10 +3,13 @@
 
 #pragma once
 
+#include <RakNet/BitStream.h>
+
 #pragma pack (push, 1)
 struct ClientID
 {
 	ClientID();
+	ClientID(RakNet::BitStream* bs);
 	ClientID(int _length, char* _guid);
 	~ClientID();
 

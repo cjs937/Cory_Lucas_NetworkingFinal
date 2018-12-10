@@ -4,6 +4,18 @@
 ClientID::ClientID(): guidLength(0), guid(nullptr)
 {}
 
+ClientID::ClientID(RakNet::BitStream* bs)
+{
+	bs->Read(guidLength);
+
+	guid = (char*)malloc(guidLength);
+
+	for (int i = 0; i < guidLength; i++)
+	{
+		bs->Read(guid[i]);
+	}
+};
+
 ClientID::ClientID(int _length, char* _guid) : guidLength(_length), guid(_guid)
 {}
 
