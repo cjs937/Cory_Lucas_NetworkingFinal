@@ -22,8 +22,8 @@ class ServerState
 {
 private:
 	//DemoState* localState;
-	std::vector<PlayerData*> dataThisFrame;
-	std::vector<PlayerData*> pendingAttackers;
+	std::vector<PlayerData*>* dataThisFrame;
+	std::vector<CombatPlayerData*>* pendingAttackers;
 
 	bool runLoop;
 	int latencyThreshold;
@@ -38,6 +38,7 @@ private:
 	bool canPerformAttacks(PlayerData* _player, ClientID _opponentID);
 	void handlePlayerBattle(PlayerData* _player1, PlayerData* _player2);
 	void sendRoundWinnerPacket(ClientID _winner, ClientID _loser, bool isDraw = false);
+	void shutdownServer();
 
 public:
 	ServerState();
@@ -51,22 +52,22 @@ public:
 	//inline bool shouldSendState(bool _flag) { return sendGameState = _flag; };
 	void exitLoop();
 	bool shouldLoop();
-	void addPlayerData(PlayerData* _data);
+	//void addPlayerData(PlayerData* _data);
 
 	///<summary>
 	/// Assumes Message ID is already stripped from bitstream
 	///</summary>
-	void addPlayerData(RakNet::BitStream* _entityData); 
+	//void addPlayerData(RakNet::BitStream* _entityData); 
 
 	///<summary>
 	/// Assumes Message ID is already stripped from bitstream
 	///</summary>
-	void handleAttacker(RakNet::BitStream* _entityData, ClientID _opponentID); // TODO: SAME HERE
+	//void handleAttacker(RakNet::BitStream* _entityData, ClientID _opponentID); // TODO: SAME HERE
 
 	///<summary>
 	/// Assumes Message ID is already stripped from bitstream
 	///</summary>
-	PlayerData* createPlayerFromPacket(RakNet::BitStream* _entityData);
+	//PlayerData* createPlayerFromPacket(RakNet::BitStream* _entityData);
 
 	static ServerState* getInstance();
 };

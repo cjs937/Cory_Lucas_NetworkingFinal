@@ -5,6 +5,11 @@
 #include "../egp-net-framework/Vector3.h"
 #include "ClientID.h"
 
+namespace RakNet
+{
+	class BitStream;
+}
+
 struct PlayerData
 {
 public:
