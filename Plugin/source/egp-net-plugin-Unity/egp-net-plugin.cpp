@@ -45,6 +45,25 @@ struct CombatUpdate
 	int action;
 };
 
+struct CollisionUpdate
+{
+	int guidLength1;
+	int guidLength2;
+	char* guid1;
+	char* guid2;
+
+};
+
+struct RoundWinUpdate
+{
+	int winnerGuidLength;
+	int loserGuidLength;
+	char* winnerGuid;
+	char* loserGuid;
+	bool draw;
+
+};
+
 // create and return instance of peer interface
 RakNet::RakPeerInterface *peer;
 
@@ -52,6 +71,8 @@ DemoPeerManager* peerManager;
 
 std::queue<EntityUpdate*>* entityUpdates;
 std::queue<CombatUpdate*>* combatUpdates;
+std::queue<CollisionUpdate*>* collisionUpdates;
+std::queue<RoundWinUpdate*>* roundWinUpdates;
 
 extern "C"
 {
@@ -252,7 +273,76 @@ extern "C"
 				//return retData;
 			}
 			break;
-		
+		case DemoPeerManager::PLAYER_COLLISION:
+			{
+				RakNet::RakString rs;
+				RakNet::BitStream bsIn(packet->data, packet->length, true);
+
+				// Skip the message ID
+				bsIn.IgnoreBytes(sizeof(RakNet::MessageID));
+
+				CollisionUpdate* update = new CollisionUpdate();
+
+				// Get the GUID length and allocate that much space
+				// Player 1
+				bsIn.Read(update->guidLength1);
+				update->guid1 = (char*)malloc(update->guidLength1);
+
+				for (int i = 0; i < update->guidLength1; i++)
+				{
+					bsIn.Read(update->guid1[i]);
+				}
+
+				// Player 2
+				bsIn.Read(update->guidLength2);
+				update->guid2 = (char*)malloc(update->guidLength2);
+
+				for (int i = 0; i < update->guidLength2; i++)
+				{
+					bsIn.Read(update->guid2[i]);
+				}
+
+				collisionUpdates->push(update);
+
+				return (int)DemoPeerManager::PLAYER_COLLISION;
+			}
+			break;
+		case DemoPeerManager::PLAYER_WIN_ROUND:
+		{
+			RakNet::RakString rs;
+			RakNet::BitStream bsIn(packet->data, packet->length, true);
+
+			// Skip the message ID
+			bsIn.IgnoreBytes(sizeof(RakNet::MessageID));
+
+			RoundWinUpdate* update = new RoundWinUpdate();
+
+			// Get the GUID length and allocate that much space
+			// Player 1
+			bsIn.Read(update->winnerGuidLength);
+			update->winnerGuid = (char*)malloc(update->winnerGuidLength);
+
+			for (int i = 0; i < update->winnerGuidLength; i++)
+			{
+				bsIn.Read(update->winnerGuid[i]);
+			}
+
+			// Player 2
+			bsIn.Read(update->loserGuidLength);
+			update->loserGuid = (char*)malloc(update->loserGuidLength);
+
+			for (int i = 0; i < update->loserGuidLength; i++)
+			{
+				bsIn.Read(update->loserGuid[i]);
+			}
+
+			bsIn.Read(update->draw);
+
+			roundWinUpdates->push(update);
+
+			return (int)DemoPeerManager::PLAYER_COLLISION;
+		}
+		break;
 		default:
 			printf("Message with identifier %i has arrived.\n", packet->data[0]);
 			break;

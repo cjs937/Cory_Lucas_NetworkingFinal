@@ -171,8 +171,18 @@ void ServerState::sendCollisionPacket(ClientID _p1, ClientID _p2)
 	RakNet::BitStream stream;
 
 	stream.Write((RakNet::MessageID)DemoPeerManager::PLAYER_COLLISION);
-	stream.Write(_p1);
-	stream.Write(_p2);
+
+	stream.Write(_p1.guidLength);
+	for (int i = 0; i < _p1.guidLength; i++)
+	{
+		stream.Write(_p1.guid[i]);
+	}
+
+	stream.Write(_p2.guidLength);
+	for (int i = 0; i < _p2.guidLength; i++)
+	{
+		stream.Write(_p2.guid[i]);
+	}
 
 	DemoPeerManager::getInstance()->SendPacket(&stream, -1, true, true);
 }
@@ -279,8 +289,17 @@ void ServerState::sendRoundWinnerPacket(ClientID _winner, ClientID _loser, bool 
 {
 	RakNet::BitStream stream;
 	stream.Write((RakNet::MessageID)DemoPeerManager::PLAYER_WIN_ROUND);
-	stream.Write(_winner);
-	stream.Write(_loser);
+	stream.Write(_winner.guidLength);
+	for (int i = 0; i < _winner.guidLength; i++)
+	{
+		stream.Write(_winner.guid[i]);
+	}
+
+	stream.Write(_loser.guidLength);
+	for (int i = 0; i < _loser.guidLength; i++)
+	{
+		stream.Write(_loser.guid[i]);
+	}
 	stream.Write(isDraw);
 
 	DemoPeerManager::getInstance()->SendPacket(&stream, -1, true, true);
