@@ -15,6 +15,7 @@ struct ClientID;
 namespace RakNet
 {
 	struct Packet;
+	struct BitStream;
 }
 
 class ServerState
@@ -36,6 +37,8 @@ private:
 	void sendCollisionPacket(ClientID _p1, ClientID _p2);
 	bool canPerformAttacks(PlayerData* _player, ClientID _opponentID);
 	void handlePlayerBattle(PlayerData* _player1, PlayerData* _player2);
+	void sendRoundWinnerPacket(ClientID _winner, ClientID _loser, bool isDraw = false);
+
 public:
 	ServerState();
 	~ServerState();
@@ -49,9 +52,21 @@ public:
 	void exitLoop();
 	bool shouldLoop();
 	void addPlayerData(PlayerData* _data);
-	void addPlayerData(RakNet::Packet* _entityPacket); // TODO: CHANGE TO BITSTREAM
-	void handleAttacker(RakNet::Packet* _entityData, ClientID _opponentID); // TODO: SAME HERE
-	PlayerData* createPlayerFromPacket(RakNet::Packet* _entityPacket);
+
+	///<summary>
+	/// Assumes Message ID is already stripped from bitstream
+	///</summary>
+	void addPlayerData(RakNet::BitStream* _entityData); 
+
+	///<summary>
+	/// Assumes Message ID is already stripped from bitstream
+	///</summary>
+	void handleAttacker(RakNet::BitStream* _entityData, ClientID _opponentID); // TODO: SAME HERE
+
+	///<summary>
+	/// Assumes Message ID is already stripped from bitstream
+	///</summary>
+	PlayerData* createPlayerFromPacket(RakNet::BitStream* _entityData);
 
 	static ServerState* getInstance();
 };

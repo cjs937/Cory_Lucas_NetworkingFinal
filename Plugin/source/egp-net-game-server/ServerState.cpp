@@ -194,27 +194,33 @@ bool ServerState::canPerformAttacks(PlayerData* _player, ClientID _opponentID)
 void ServerState::handlePlayerBattle(PlayerData* _player1, PlayerData* _player2) // TODO
 {
 	// 0 = rock, 1 = scissors, 2 = paper
+	ClientID winner;
+	ClientID loser;
+	bool isDraw = false;
+
+	bool p1Win = false;
+	bool p2Win = false;
 
 	if (_player1->currentAttack == 0) // rock
 	{
 		if (_player2->currentAttack == 0)
 		{
-			//draw
+			//draw	
 		}
 		else if (_player2->currentAttack == 1)
 		{
-			//p1 win
+			p1Win = true;
 		}
 		else
 		{
-			//p2 win
+			p2Win = true;
 		}
 	}
 	else if (_player1->currentAttack == 1) //paper
 	{
 		if (_player2->currentAttack == 0)
 		{
-			//p1 win
+			p1Win = true;
 		}
 		else if (_player2->currentAttack == 1)
 		{
@@ -222,38 +228,71 @@ void ServerState::handlePlayerBattle(PlayerData* _player1, PlayerData* _player2)
 		}
 		else
 		{
-			//p2 win
+			p2Win = true;
 		}
 	}
 	else // scissors
 	{
 		if (_player2->currentAttack == 0)
 		{
-			//p2 win
+			p2Win = true;
 		}
 		else if (_player2->currentAttack == 1)
 		{
-			//p1 win
+			p1Win = true;
 		}
 		else
 		{
 			//draw
 		}
 	}
+
+	if (p1Win)
+	{
+		winner = _player1->id;
+		loser = _player2->id;
+	}
+	else if (p2Win)
+	{
+		winner = _player2->id;
+		loser = _player1->id;
+	}
+	else
+	{
+		winner = _player1->id;
+		loser = _player2->id;
+
+		isDraw = true;
+	}
+
+	sendRoundWinnerPacket(winner, loser, isDraw);
 }
+
+void ServerState::sendRoundWinnerPacket(ClientID _winner, ClientID _loser, bool isDraw = false)
+{
+	RakNet::BitStream stream;
+	stream.Write((RakNet::MessageID)DemoPeerManager::PLAYER_WIN_ROUND);
+	stream.Write(_winner);
+	stream.Write(_loser);
+	stream.Write(isDraw);
+
+	DemoPeerManager::getInstance()->SendPacket(&stream, -1, true, true);
+}
+
 
 void ServerState::addPlayerData(PlayerData* _data)
 {
 	dataThisFrame.push_back(_data);
 }
 
-void ServerState::addPlayerData(RakNet::Packet* _entityPacket) const
+
+void ServerState::addPlayerData(RakNet::BitStream* _entityData)
 {
-	addPlayerData(createPlayerFromPacket(_entityPacket));
+	addPlayerData(createPlayerFromPacket(_entityData));
 }
 
 //TODO: Call this from networking loop
-void ServerState::handleAttacker(RakNet::Packet* _entityData, ClientID _opponentID)
+void ServerState::handleAttacker(RakNet::BitStream* _entityData, ClientID _opponentID)
 {
 	PlayerData* player = createPlayerFromPacket(_entityData);
 
@@ -265,9 +304,8 @@ void ServerState::handleAttacker(RakNet::Packet* _entityData, ClientID _opponent
 	}
 }
 
-PlayerData* ServerState::createPlayerFromPacket(RakNet::Packet* _entityPacket)
+PlayerData* ServerState::createPlayerFromPacket(RakNet::BitStream* _entityData)
 {
-	RakNet::BitStream stream;
 	int guidLength;
 	Vector3 position;
 	Vector3 destination;
@@ -275,17 +313,17 @@ PlayerData* ServerState::createPlayerFromPacket(RakNet::Packet* _entityPacket)
 	bool inCombat;
 	int currentAttack;
 
-	stream.IgnoreBytes(sizeof((char)DemoPeerManager::UPDATE_NETWORK_PLAYER));
+	//_entityData.IgnoreBytes(sizeof((char)DemoPeerManager::UPDATE_NETWORK_PLAYER));
 
-	stream.Read(guidLength);
+	_entityData->Read(guidLength);
 	char* guid = new char[guidLength];
 
-	stream.Read(guid, guidLength);
-	stream.Read(position);
-	stream.Read(destination);
-	stream.Read(collisionRadius);
-	stream.Read(inCombat);
-	stream.Read(currentAttack);
+	_entityData->Read(guid, guidLength);
+	_entityData->Read(position);
+	_entityData->Read(destination);
+	_entityData->Read(collisionRadius);
+	_entityData->Read(inCombat);
+	_entityData->Read(currentAttack);
 
 	PlayerData* newData = new PlayerData();
 
