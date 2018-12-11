@@ -48,7 +48,9 @@ public class NetworkManager : MonoBehaviour
     [DllImport("egp-net-plugin-Unity")]
     private static extern IntPtr plsreturn(ref int length);
     [DllImport("egp-net-plugin-Unity")]
-    private static extern bool sendEntityToServer(int guidSize, byte[] guid, SimpleVector3 position, SimpleVector3 destination);
+    private static extern bool sendEntityToServer(int guidSize, byte[] guid, SimpleVector3 position, SimpleVector3 destination, float collisionRadius, bool inCombat, int currentAttack);
+    [DllImport("egp-net-plugin-Unity")]
+    private static extern bool sendCombatUpdateToServer(int guidSize, byte[] guid, SimpleVector3 position, SimpleVector3 destination, float collisionRadius, bool inCombat, int currentAttack, int opponetGuidLength, byte[] opponetGuid);
     [DllImport("egp-net-plugin-Unity")]
     private static extern bool getNextEntityUpdate(ref int guidLength, ref byte[] guid, ref SimpleVector3 position, ref SimpleVector3 destination, ref UInt64 latency);
     [DllImport("egp-net-plugin-Unity")]
@@ -117,7 +119,7 @@ public class NetworkManager : MonoBehaviour
         destination.y = send.moveDestination.y;
         destination.z = send.moveDestination.z;
 
-        sendEntityToServer(guidSize, guidBytes, position, destination);
+        sendEntityToServer(guidSize, guidBytes, position, destination, 0.5f, false, 0);
     }
 
     private void HandleNetworking()
