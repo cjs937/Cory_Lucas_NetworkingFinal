@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,6 +10,8 @@ public class RPSManager : MonoBehaviour
     public RPSPlayer opponent;
     public Text countdownText;
 
+    public static Guid opponentGuid;
+
     bool selectionStage = false;
 
     int countdown = 0;
@@ -17,6 +20,8 @@ public class RPSManager : MonoBehaviour
     void Start()
     {
         countdownText.gameObject.SetActive(false);
+
+        beginTurn();
     }
 
     // Update is called once per frame
@@ -26,11 +31,11 @@ public class RPSManager : MonoBehaviour
         {
             endSelectionStage();
         }
-        else if(!selectionStage)
-        {
-            if (Input.GetKeyDown(KeyCode.Space))
-                beginTurn();
-        }
+        //else if(!selectionStage)
+        //{
+        //    if (Input.GetKeyDown(KeyCode.Space))
+        //        beginTurn();
+        //}
     }
 
     public void beginTurn()
@@ -55,30 +60,15 @@ public class RPSManager : MonoBehaviour
 
     void fireAttacks()
     {
-        Debug.Log(player.currentAttack.type + " V.S " + opponent.currentAttack.type);
+        //TODO:
+        //send local player attack data to server
+    }
 
-        RPSPlayer winner = getRPSWinner();
-        if(winner == player)
-        {
-            Debug.Log("Player wins");
-            opponent.currentLives--;
-
-            if (opponent.currentLives == 0)
-                Debug.Log("Player victory");
-        }
-        else if(winner == opponent)
-        {
-            Debug.Log("Opponent wins");
-
-            player.currentLives--;
-
-            if (player.currentLives == 0)
-                Debug.Log("Opponent victory");
-        }
-        else
-        {
-            Debug.Log("Draw");
-        }
+    public void recieveRoundWinner(Guid _winnerID)
+    {
+        //TODO:
+        //increment/decrement win counts
+        //if any player's lives = 0 end game and send back to main scene
     }
 
     IEnumerator timerCountdown()

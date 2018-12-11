@@ -41,7 +41,7 @@ struct EntityUpdate
 struct CombatUpdate
 {
 	int guidLength;
-	char* opponetGuid;
+	char* opponentGuid;
 	int action;
 };
 
@@ -409,7 +409,7 @@ extern "C"
 	}
 
 	__declspec(dllexport)	// tmp linker flag, forces lib to exist
-	bool sendCombatUpdateToServer(int guidLength, char* guid, Vector3 position, Vector3 destination, float collisionRadius, bool inCombat, int currentAttack, int opponetGuidLength, char* opponetGuid)
+	bool sendCombatUpdateToServer(int guidLength, char* guid, Vector3 position, Vector3 destination, float collisionRadius, bool inCombat, int currentAttack, int opponentGuidLength, char* opponentGuid)
 	{
 		RakNet::BitStream bsOut;
 		bsOut.Write((RakNet::MessageID)DemoPeerManager::UPDATE_NETWORK_PLAYER);
@@ -427,14 +427,16 @@ extern "C"
 		bsOut.Write(inCombat);
 		bsOut.Write(currentAttack);
 
-		bsOut.Write(opponetGuidLength);
+		bsOut.Write(opponentGuidLength);
 
-		for (int i = 0; i < opponetGuidLength; i++)
+		for (int i = 0; i < opponentGuidLength; i++)
 		{
-			bsOut.Write(opponetGuid[i]);
+			bsOut.Write(opponentGuid[i]);
 		}
 
 		peerManager->sendEntity(&bsOut);
+
+		return true;
 	}
 
 	__declspec(dllexport)	// tmp linker flag, forces lib to exist

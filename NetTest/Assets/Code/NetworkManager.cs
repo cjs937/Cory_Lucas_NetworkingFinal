@@ -50,7 +50,7 @@ public class NetworkManager : MonoBehaviour
     [DllImport("egp-net-plugin-Unity")]
     private static extern bool sendEntityToServer(int guidSize, byte[] guid, SimpleVector3 position, SimpleVector3 destination, float collisionRadius, bool inCombat, int currentAttack);
     [DllImport("egp-net-plugin-Unity")]
-    private static extern bool sendCombatUpdateToServer(int guidSize, byte[] guid, SimpleVector3 position, SimpleVector3 destination, float collisionRadius, bool inCombat, int currentAttack, int opponetGuidLength, byte[] opponetGuid);
+    private static extern bool sendCombatUpdateToServer(int guidSize, byte[] guid, SimpleVector3 position, SimpleVector3 destination, float collisionRadius, bool inCombat, int currentAttack, int opponentGuidLength, byte[] opponentGuid);
     [DllImport("egp-net-plugin-Unity")]
     private static extern bool getNextEntityUpdate(ref int guidLength, ref byte[] guid, ref SimpleVector3 position, ref SimpleVector3 destination, ref UInt64 latency);
     [DllImport("egp-net-plugin-Unity")]
@@ -101,6 +101,31 @@ public class NetworkManager : MonoBehaviour
 
             // Check for and queue packets as fast and often as we can.
             HandleNetworking();
+
+            if (entityUpdatesWaiting > 0)
+            {
+                //TODO:
+                // loop through all updates
+                // if we have that entity, update it
+                // if we don't, create it
+            }
+            if (collisionUpdatesWaiting > 0)
+            {
+                for (int i = 0; i < collisionUpdatesWaiting; i++)
+                {
+                    //TODO:
+                    // if either of i's guids are our local player's
+                    // set the other guid in rps manager and then
+                    // switch to the combat scene
+                }
+            }
+            if (roundWinUpdatesWaiting > 0)
+            {
+                //TODO:
+                // loop through all updates
+                // if any of them are ours, pass that info to rps manager then
+                // delete all other updates, we can only be in one combat
+            }
         }
     }
 
