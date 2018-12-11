@@ -10,6 +10,7 @@
 class DemoPeerManager;
 class InputManager;
 struct PlayerData;
+struct CombatPlayerData;
 struct ClientID;
 
 namespace RakNet
@@ -35,7 +36,7 @@ private:
 
 	void checkWorldCollisions();
 	void sendCollisionPacket(ClientID _p1, ClientID _p2);
-	bool canPerformAttacks(PlayerData* _player, ClientID _opponentID);
+	void checkForPlayerBattles();
 	void handlePlayerBattle(PlayerData* _player1, PlayerData* _player2);
 	void sendRoundWinnerPacket(ClientID _winner, ClientID _loser, bool isDraw = false);
 	void shutdownServer();

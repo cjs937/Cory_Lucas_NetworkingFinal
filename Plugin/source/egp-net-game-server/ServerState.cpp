@@ -57,13 +57,13 @@ void ServerState::updateState()
 		}
 
 		//Clear attackers list
-		std::queue<PlayerData*> unresolvedAttackers;
+		std::queue<CombatPlayerData*> unresolvedAttackers;
 
 		for (int i = 0; i < pendingAttackers->size(); ++i)
 		{
 			if ((*pendingAttackers)[i])
 			{
-				if (!(*pendingAttackers)[i]->unresolved)
+				if (!(*pendingAttackers)[i]->playerData->unresolved)
 					delete (*pendingAttackers)[i];
 				else
 					unresolvedAttackers.push((*pendingAttackers)[i]);
@@ -113,18 +113,6 @@ bool ServerState::init()
 	lastTime = std::chrono::system_clock::now();
 	lastTimeMS = std::chrono::time_point_cast<std::chrono::milliseconds>(lastTime);
 	lastNetworkUpdateMS = std::chrono::time_point_cast<std::chrono::milliseconds>(lastTime);
-
-	PlayerData* d1 = new PlayerData();
-	d1->collisionRadius = 5;
-	d1->position = Vector3(1, 3);
-	d1->id.guid = "dfdf";
-	PlayerData* d2 = new PlayerData();
-	d2->collisionRadius = 1;
-	d1->position = Vector3(1, 7);
-	d2->id.guid = "aaaa";
-
-	addPlayerData(d1);
-	addPlayerData(d2);
 
 	return true;
 
@@ -187,28 +175,29 @@ void ServerState::sendCollisionPacket(ClientID _p1, ClientID _p2)
 	DemoPeerManager::getInstance()->SendPacket(&stream, -1, true, true);
 }
 
-bool ServerState::canPerformAttacks(PlayerData* _player, ClientID _opponentID)
+void ServerState::checkForPlayerBattles()
 {
 	for (int i = 0; i < pendingAttackers->size(); ++i)
 	{
-		for (int j = i + 1; j < pendingAttackers->size(); ++j
+		if ((*pendingAttackers)[i]->playerData->unresolved == false)
+			continue;
+
+		for (int j = i + 1; j < pendingAttackers->size(); ++j)
 		{
+			if ((*pendingAttackers)[i]->opponentID == (*pendingAttackers)[i]->playerData->id)
+			{
+				handlePlayerBattle((*pendingAttackers)[i]->playerData, (*pendingAttackers)[j]->playerData);
 
+				(*pendingAttackers)[i]->playerData->unresolved = false;
+				(*pendingAttackers)[j]->playerData->unresolved = false;
+
+				break;
+			}
 		}
-		//if ((*pendingAttackers)[i]->id == _opponentID && (*pendingAttackers)[i]->unresolved)
-		//{
-		//	handlePlayerBattle(_player, (*pendingAttackers)[i]);
-
-		//	(*pendingAttackers)[i]->unresolved = false;
-
-		//	return true;
-		//}
 	}
-
-	return false;
 }
 
-void ServerState::handlePlayerBattle(PlayerData* _player1, PlayerData* _player2) // TODO
+void ServerState::handlePlayerBattle(PlayerData* _player1, PlayerData* _player2)
 {
 	// 0 = rock, 1 = scissors, 2 = paper
 	ClientID winner;
@@ -318,17 +307,17 @@ void ServerState::sendRoundWinnerPacket(ClientID _winner, ClientID _loser, bool 
 //}
 
 //TODO: Call this from networking loop
-void ServerState::handleAttacker(RakNet::BitStream* _entityData, ClientID _opponentID)
-{
-	PlayerData* player = createPlayerFromPacket(_entityData);
-
-	if (canPerformAttacks(player, _opponentID)) // fires attack/win event
-		delete player;
-	else
-	{
-		(*pendingAttackers).push_back(player);
-	}
-}
+//void ServerState::handleAttacker(RakNet::BitStream* _entityData, ClientID _opponentID)
+//{
+//	PlayerData* player = createPlayerFromPacket(_entityData);
+//
+//	if (canPerformAttacks(player, _opponentID)) // fires attack/win event
+//		delete player;
+//	else
+//	{
+//		(*pendingAttackers).push_back(player);
+//	}
+//}
 
 //PlayerData* ServerState::createPlayerFromPacket(RakNet::BitStream* _entityData)
 //{

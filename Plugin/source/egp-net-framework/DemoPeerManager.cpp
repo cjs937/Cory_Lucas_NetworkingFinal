@@ -67,8 +67,7 @@ int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const uns
 
 		PlayerData* player = createPlayerFromPacket(&stream);
 
-		ClientID opponentId;
-		//TODO: read opponent ID
+		ClientID opponentId(&stream);
 
 		CombatPlayerData* combatPlayer = new CombatPlayerData();
 
@@ -137,19 +136,22 @@ RakNet::Time DemoPeerManager::calcLatency(RakNet::BitStream& _stream)
 
 PlayerData* DemoPeerManager::createPlayerFromPacket(RakNet::BitStream* _entityData)
 {
-	int guidLength;
+	//int guidLength;
 	Vector3 position;
 	Vector3 destination;
 	float collisionRadius;
 	bool inCombat;
 	int currentAttack;
+	ClientID id;
 
 	//_entityData.IgnoreBytes(sizeof((char)DemoPeerManager::UPDATE_NETWORK_PLAYER));
 
-	_entityData->Read(guidLength);
-	char* guid = new char[guidLength];
+	id = ClientID(_entityData);
 
-	_entityData->Read(guid, guidLength);
+	//_entityData->Read(guidLength);
+	//char* guid = new char[guidLength];
+
+	//_entityData->Read(guid, guidLength);
 	_entityData->Read(position);
 	_entityData->Read(destination);
 	_entityData->Read(collisionRadius);
@@ -158,7 +160,7 @@ PlayerData* DemoPeerManager::createPlayerFromPacket(RakNet::BitStream* _entityDa
 
 	PlayerData* newData = new PlayerData();
 
-	newData->id = ClientID(guidLength, guid);
+	newData->id = id;//ClientID(guidLength, guid);
 	newData->position = position;
 	newData->destination = destination;
 	newData->collisionRadius = collisionRadius;

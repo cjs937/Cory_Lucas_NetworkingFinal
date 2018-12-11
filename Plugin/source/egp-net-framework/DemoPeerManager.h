@@ -15,9 +15,9 @@
 #include "egp-net/fw/egpNetPeerManager.h"
 #include <vector>
 #include <queue>
+#include "ClientID.h"
 
 struct PlayerData;
-struct ClientID;
 
 struct CombatPlayerData
 {
