@@ -70,7 +70,6 @@ RakNet::RakPeerInterface *peer;
 DemoPeerManager* peerManager;
 
 std::queue<EntityUpdate*>* entityUpdates;
-std::queue<CombatUpdate*>* combatUpdates;
 std::queue<CollisionUpdate*>* collisionUpdates;
 std::queue<RoundWinUpdate*>* roundWinUpdates;
 
@@ -102,7 +101,8 @@ extern "C"
 		peer = peerManager->getPeer();
 
 		entityUpdates = new std::queue<EntityUpdate*>();
-		combatUpdates = new std::queue<CombatUpdate*>();
+		collisionUpdates = new std::queue<CollisionUpdate*>();
+		roundWinUpdates = new std::queue<RoundWinUpdate*>();
 
 		return true;
 
@@ -122,22 +122,6 @@ extern "C"
 		*position = currUpdate->position;
 		*destination = currUpdate->destination;
 		*latency = currUpdate->latency;
-
-		return true;
-	}
-
-	__declspec(dllexport)	// tmp linker flag, forces lib to exist
-	bool getNextCombatUpdate(int* guidLength, char** opponetGuid, int* action)
-	{
-		if (combatUpdates->size() == 0)
-			return false;
-
-		CombatUpdate* currUpdate = combatUpdates->front();
-		combatUpdates->pop();
-
-		*guidLength = currUpdate->guidLength;
-		*opponetGuid = currUpdate->opponetGuid;
-		*action = currUpdate->action;
 
 		return true;
 	}
