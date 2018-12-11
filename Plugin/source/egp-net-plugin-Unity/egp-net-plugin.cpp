@@ -409,6 +409,35 @@ extern "C"
 	}
 
 	__declspec(dllexport)	// tmp linker flag, forces lib to exist
+	bool sendCombatUpdateToServer(int guidLength, char* guid, Vector3 position, Vector3 destination, float collisionRadius, bool inCombat, int currentAttack, int opponetGuidLength, char* opponetGuid)
+	{
+		RakNet::BitStream bsOut;
+		bsOut.Write((RakNet::MessageID)DemoPeerManager::UPDATE_NETWORK_PLAYER);
+
+		bsOut.Write(guidLength);
+
+		for (int i = 0; i < guidLength; i++)
+		{
+			bsOut.Write(guid[i]);
+		}
+
+		bsOut.Write(position);
+		bsOut.Write(destination);
+		bsOut.Write(collisionRadius);
+		bsOut.Write(inCombat);
+		bsOut.Write(currentAttack);
+
+		bsOut.Write(opponetGuidLength);
+
+		for (int i = 0; i < opponetGuidLength; i++)
+		{
+			bsOut.Write(opponetGuid[i]);
+		}
+
+		peerManager->sendEntity(&bsOut);
+	}
+
+	__declspec(dllexport)	// tmp linker flag, forces lib to exist
 	bool disconnect()
 	{
 		if (peerManager->Disconnect() != 0)

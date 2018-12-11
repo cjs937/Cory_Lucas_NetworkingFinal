@@ -51,6 +51,7 @@ int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const uns
 		sendEntity(&stream, mp_peer->GetIndexFromSystemAddress(packet->systemAddress));
 		
 		stream.IgnoreBytes(sizeof(RakNet::MessageID));
+		stream.IgnoreBytes(sizeof(RakNet::Time));
 
 		//ServerState::getInstance()->addPlayerData(&stream);
 
@@ -147,9 +148,6 @@ PlayerData* DemoPeerManager::createPlayerFromPacket(RakNet::BitStream* _entityDa
 	//_entityData.IgnoreBytes(sizeof((char)DemoPeerManager::UPDATE_NETWORK_PLAYER));
 
 	id = ClientID(_entityData);
-
-	//_entityData->Read(guidLength);
-	//char* guid = new char[guidLength];
 
 	//_entityData->Read(guid, guidLength);
 	_entityData->Read(position);
