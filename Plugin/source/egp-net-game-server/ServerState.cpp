@@ -7,6 +7,9 @@
 ServerState::ServerState()
 {
 	runLoop = true;
+
+	dataThisFrame = &(DemoPeerManager::getInstance()->pendingPlayerUpdates);
+	pendingAttackers = &(DemoPeerManager::getInstance()->pendingAttackers);
 }
 
 
@@ -33,46 +36,46 @@ void ServerState::updateState()
 		//Clear data list
 		std::queue<PlayerData*> unresolvedData; //unresolved means that the data hasn't been used for anything yet
 
-		for (int i = 0; i < dataThisFrame.size(); ++i)
+		for (int i = 0; i < dataThisFrame->size(); ++i)
 		{
-			if (dataThisFrame[i])
+			if ((*dataThisFrame)[i])
 			{
-				if (!dataThisFrame[i]->unresolved)
-					delete dataThisFrame[i];
+				if (!(*dataThisFrame)[i]->unresolved)
+					delete (*dataThisFrame)[i];
 				else
-					unresolvedData.push(dataThisFrame[i]);
+					unresolvedData.push((*dataThisFrame)[i]);
 			}
 			
 		}
 
-		dataThisFrame.clear();
+		(*dataThisFrame).clear();
 
 		while (unresolvedData.size() > 0)
 		{
-			dataThisFrame.push_back(unresolvedData.front());
+			(*dataThisFrame).push_back(unresolvedData.front());
 			unresolvedData.pop();
 		}
 
 		//Clear attackers list
-		std::queue<PlayerData*> unresolvedAttackers;
+		std::queue<CombatPlayerData*> unresolvedAttackers;
 
-		for (int i = 0; i < pendingAttackers.size(); ++i)
+		for (int i = 0; i < pendingAttackers->size(); ++i)
 		{
-			if (pendingAttackers[i])
+			if ((*pendingAttackers)[i])
 			{
-				if (!pendingAttackers[i]->unresolved)
-					delete pendingAttackers[i];
+				if (!(*pendingAttackers)[i]->playerData->unresolved)
+					delete (*pendingAttackers)[i];
 				else
-					unresolvedAttackers.push(pendingAttackers[i]);
+					unresolvedAttackers.push((*pendingAttackers)[i]);
 			}
 
 		}
 
-		pendingAttackers.clear();
+		(*pendingAttackers).clear();
 
 		while (unresolvedAttackers.size() > 0)
 		{
-			pendingAttackers.push_back(unresolvedAttackers.front());
+			(*pendingAttackers).push_back(unresolvedAttackers.front());
 			unresolvedAttackers.pop();
 		}
 
@@ -111,34 +114,22 @@ bool ServerState::init()
 	lastTimeMS = std::chrono::time_point_cast<std::chrono::milliseconds>(lastTime);
 	lastNetworkUpdateMS = std::chrono::time_point_cast<std::chrono::milliseconds>(lastTime);
 
-	PlayerData* d1 = new PlayerData();
-	d1->collisionRadius = 5;
-	d1->position = Vector3(1, 3);
-	d1->id.guid = "dfdf";
-	PlayerData* d2 = new PlayerData();
-	d2->collisionRadius = 1;
-	d1->position = Vector3(1, 7);
-	d2->id.guid = "aaaa";
-
-	addPlayerData(d1);
-	addPlayerData(d2);
-
 	return true;
 
 }
 
 void ServerState::checkWorldCollisions()
 {
-	for (int i = 0; i < dataThisFrame.size(); ++i)
+	for (int i = 0; i < dataThisFrame->size(); ++i)
 	{
-		PlayerData* currentPlayer = dataThisFrame[i];
+		PlayerData* currentPlayer = (*dataThisFrame)[i];
 		
 		if (currentPlayer->inCombat)
 			continue;
 
-		for (int j = i + 1; j < dataThisFrame.size(); ++j)
+		for (int j = i + 1; j < dataThisFrame->size(); ++j)
 		{
-			PlayerData* thisPlayer = dataThisFrame[j];
+			PlayerData* thisPlayer = (*dataThisFrame)[j];
 
 			if (thisPlayer->inCombat || currentPlayer->id == thisPlayer->id)
 				continue;
@@ -184,24 +175,29 @@ void ServerState::sendCollisionPacket(ClientID _p1, ClientID _p2)
 	DemoPeerManager::getInstance()->SendPacket(&stream, -1, true, true);
 }
 
-bool ServerState::canPerformAttacks(PlayerData* _player, ClientID _opponentID)
+void ServerState::checkForPlayerBattles()
 {
-	for (int i = 0; i < pendingAttackers.size(); ++i)
+	for (int i = 0; i < pendingAttackers->size(); ++i)
 	{
-		if (pendingAttackers[i]->id == _opponentID && pendingAttackers[i]->unresolved)
+		if ((*pendingAttackers)[i]->playerData->unresolved == false)
+			continue;
+
+		for (int j = i + 1; j < pendingAttackers->size(); ++j)
 		{
-			handlePlayerBattle(_player, pendingAttackers[i]);
+			if ((*pendingAttackers)[i]->opponentID == (*pendingAttackers)[i]->playerData->id)
+			{
+				handlePlayerBattle((*pendingAttackers)[i]->playerData, (*pendingAttackers)[j]->playerData);
 
-			pendingAttackers[i]->unresolved = false;
+				(*pendingAttackers)[i]->playerData->unresolved = false;
+				(*pendingAttackers)[j]->playerData->unresolved = false;
 
-			return true;
+				break;
+			}
 		}
 	}
-
-	return false;
 }
 
-void ServerState::handlePlayerBattle(PlayerData* _player1, PlayerData* _player2) // TODO
+void ServerState::handlePlayerBattle(PlayerData* _player1, PlayerData* _player2)
 {
 	// 0 = rock, 1 = scissors, 2 = paper
 	ClientID winner;
@@ -278,7 +274,7 @@ void ServerState::handlePlayerBattle(PlayerData* _player1, PlayerData* _player2)
 	sendRoundWinnerPacket(winner, loser, isDraw);
 }
 
-void ServerState::sendRoundWinnerPacket(ClientID _winner, ClientID _loser, bool isDraw = false)
+void ServerState::sendRoundWinnerPacket(ClientID _winner, ClientID _loser, bool isDraw)
 {
 	RakNet::BitStream stream;
 	stream.Write((RakNet::MessageID)DemoPeerManager::PLAYER_WIN_ROUND);
@@ -299,66 +295,66 @@ void ServerState::sendRoundWinnerPacket(ClientID _winner, ClientID _loser, bool 
 }
 
 
-void ServerState::addPlayerData(PlayerData* _data)
-{
-	dataThisFrame.push_back(_data);
-}
+//void ServerState::addPlayerData(PlayerData* _data)
+//{
+//	(*dataThisFrame).push_back(_data);
+//}
 
 
-void ServerState::addPlayerData(RakNet::BitStream* _entityData)
-{
-	addPlayerData(createPlayerFromPacket(_entityData));
-}
+//void ServerState::addPlayerData(RakNet::BitStream* _entityData)
+//{
+//	addPlayerData(createPlayerFromPacket(_entityData));
+//}
 
 //TODO: Call this from networking loop
-void ServerState::handleAttacker(RakNet::BitStream* _entityData, ClientID _opponentID)
-{
-	PlayerData* player = createPlayerFromPacket(_entityData);
+//void ServerState::handleAttacker(RakNet::BitStream* _entityData, ClientID _opponentID)
+//{
+//	PlayerData* player = createPlayerFromPacket(_entityData);
+//
+//	if (canPerformAttacks(player, _opponentID)) // fires attack/win event
+//		delete player;
+//	else
+//	{
+//		(*pendingAttackers).push_back(player);
+//	}
+//}
 
-	if (canPerformAttacks(player, _opponentID)) // fires attack/win event
-		delete player;
-	else
-	{
-		pendingAttackers.push_back(player);
-	}
-}
-
-PlayerData* ServerState::createPlayerFromPacket(RakNet::BitStream* _entityData)
-{
-	int guidLength;
-	Vector3 position;
-	Vector3 destination;
-	float collisionRadius;
-	bool inCombat;
-	int currentAttack;
-
-	//_entityData.IgnoreBytes(sizeof((char)DemoPeerManager::UPDATE_NETWORK_PLAYER));
-
-	_entityData->Read(guidLength);
-	char* guid = new char[guidLength];
-
-	_entityData->Read(guid, guidLength);
-	_entityData->Read(position);
-	_entityData->Read(destination);
-	_entityData->Read(collisionRadius);
-	_entityData->Read(inCombat);
-	_entityData->Read(currentAttack);
-
-	PlayerData* newData = new PlayerData();
-
-	newData->id = ClientID(guidLength, guid);
-	newData->position = position;
-	newData->destination = destination;
-	newData->collisionRadius = collisionRadius;
-	newData->inCombat = inCombat;
-	newData->currentAttack = currentAttack;
-
-	//printf("GUID: %s\nPosition: %f, %f, %f\nDestination: %f, %f, %f",
-	//	guid, position.x, position.y, position.z,
-	//	destination.x, destination.y, destination.z);
-
-	return newData;
-}
+//PlayerData* ServerState::createPlayerFromPacket(RakNet::BitStream* _entityData)
+//{
+//	int guidLength;
+//	Vector3 position;
+//	Vector3 destination;
+//	float collisionRadius;
+//	bool inCombat;
+//	int currentAttack;
+//
+//	//_entityData.IgnoreBytes(sizeof((char)DemoPeerManager::UPDATE_NETWORK_PLAYER));
+//
+//	_entityData->Read(guidLength);
+//	char* guid = new char[guidLength];
+//
+//	_entityData->Read(guid, guidLength);
+//	_entityData->Read(position);
+//	_entityData->Read(destination);
+//	_entityData->Read(collisionRadius);
+//	_entityData->Read(inCombat);
+//	_entityData->Read(currentAttack);
+//
+//	PlayerData* newData = new PlayerData();
+//
+//	newData->id = ClientID(guidLength, guid);
+//	newData->position = position;
+//	newData->destination = destination;
+//	newData->collisionRadius = collisionRadius;
+//	newData->inCombat = inCombat;
+//	newData->currentAttack = currentAttack;
+//
+//	//printf("GUID: %s\nPosition: %f, %f, %f\nDestination: %f, %f, %f",
+//	//	guid, position.x, position.y, position.z,
+//	//	destination.x, destination.y, destination.z);
+//
+//	return newData;
+//}
 
 
 ServerState* ServerState::getInstance()
@@ -366,4 +362,13 @@ ServerState* ServerState::getInstance()
 	static ServerState instance;
 
 	return &instance;
+}
+
+void ServerState::shutdownServer()
+{
+	RakNet::BitStream stream;
+
+	stream.Write((RakNet::MessageID)DemoPeerManager::SERVER_SHUTDOWN);
+
+	DemoPeerManager::getInstance()->SendPacket(&stream, -1, true, true);
 }

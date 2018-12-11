@@ -14,8 +14,9 @@
 #include <iostream>
 #include <mutex>
 #include "../egp-net-game-server/ServerState.h"
+#include "PlayerData.h"
 
-int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const unsigned int packetIndex) const
+int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const unsigned int packetIndex)
 {
 	// ****TO-DO: implement server-specific packet processor
 
@@ -29,21 +30,6 @@ int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const uns
 		break;
 	case ID_REMOTE_NEW_INCOMING_CONNECTION:
 		printf("Another client has connected.\n");
-		break;
-	case ID_CONNECTION_REQUEST_ACCEPTED:
-		printf("Our connection request has been accepted.\n");
-		{
-			// Use a BitStream to write a custom user message
-			// Bitstreams are easier to use than sending casted structures, 
-			//	and handle endian swapping automatically
-			//RakNet::BitStream bsOut;
-			//bsOut.Write((RakNet::MessageID)ID_GAME_MESSAGE_1);
-			//bsOut.Write("Hello world");
-			//peer->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
-
-			// ****TO-DO: write and send packet without using bitstream
-
-		}
 		break;
 	case ID_NEW_INCOMING_CONNECTION:
 		printf("A connection is incoming.\n");
@@ -64,15 +50,34 @@ int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const uns
 
 		sendEntity(&stream, mp_peer->GetIndexFromSystemAddress(packet->systemAddress));
 		
-		RakNet::BitStream stream;
-
 		stream.IgnoreBytes(sizeof(RakNet::MessageID));
 
-		ServerState::getInstance()->addPlayerData(stream);
+		//ServerState::getInstance()->addPlayerData(&stream);
+
+		pendingPlayerUpdates.push_back(createPlayerFromPacket(&stream));
 
 		std::cout << "Done" << std::endl;
 	}
 		break;
+	case UPDATE_COMBAT_PLAYER:
+	{
+		RakNet::BitStream stream(packet->data, packet->length, false);
+
+		stream.IgnoreBytes(sizeof(RakNet::MessageID));
+
+		PlayerData* player = createPlayerFromPacket(&stream);
+
+		ClientID opponentId(&stream);
+
+		CombatPlayerData* combatPlayer = new CombatPlayerData();
+
+		combatPlayer->playerData = player;
+		combatPlayer->opponentID;
+
+		pendingAttackers.push_back(combatPlayer);
+
+		break;
+	}
 	default:
 		std::cout << "ID" << packet->data[0] << std::endl;
 		break;
@@ -87,13 +92,17 @@ void DemoPeerManager::sendEntity(RakNet::BitStream* bs, int peer) const
 }
 
 
-DemoPeerManager::DemoPeerManager()
-{
-}
-
 DemoPeerManager::~DemoPeerManager()
 {
-	// ****TO-DO
+	for (int i = 0; i < pendingPlayerUpdates.size(); ++i)
+	{
+		delete pendingPlayerUpdates[i];
+	}
+
+	for (int i = 0; i < pendingAttackers.size(); ++i)
+	{
+		delete pendingAttackers[i];
+	}
 }
 
 DemoPeerManager* DemoPeerManager::getInstance()
@@ -123,4 +132,44 @@ RakNet::Time DemoPeerManager::calcLatency(RakNet::BitStream& _stream)
 	_stream.Read(theirT);
 	
 	return calcLatency(ourT, theirT);
+}
+
+PlayerData* DemoPeerManager::createPlayerFromPacket(RakNet::BitStream* _entityData)
+{
+	//int guidLength;
+	Vector3 position;
+	Vector3 destination;
+	float collisionRadius;
+	bool inCombat;
+	int currentAttack;
+	ClientID id;
+
+	//_entityData.IgnoreBytes(sizeof((char)DemoPeerManager::UPDATE_NETWORK_PLAYER));
+
+	id = ClientID(_entityData);
+
+	//_entityData->Read(guidLength);
+	//char* guid = new char[guidLength];
+
+	//_entityData->Read(guid, guidLength);
+	_entityData->Read(position);
+	_entityData->Read(destination);
+	_entityData->Read(collisionRadius);
+	_entityData->Read(inCombat);
+	_entityData->Read(currentAttack);
+
+	PlayerData* newData = new PlayerData();
+
+	newData->id = id;//ClientID(guidLength, guid);
+	newData->position = position;
+	newData->destination = destination;
+	newData->collisionRadius = collisionRadius;
+	newData->inCombat = inCombat;
+	newData->currentAttack = currentAttack;
+
+	//printf("GUID: %s\nPosition: %f, %f, %f\nDestination: %f, %f, %f",
+	//	guid, position.x, position.y, position.z,
+	//	destination.x, destination.y, destination.z);
+
+	return newData;
 }

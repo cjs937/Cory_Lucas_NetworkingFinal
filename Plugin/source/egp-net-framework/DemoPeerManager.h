@@ -14,6 +14,16 @@
 
 #include "egp-net/fw/egpNetPeerManager.h"
 #include <vector>
+#include <queue>
+#include "ClientID.h"
+
+struct PlayerData;
+
+struct CombatPlayerData
+{
+	PlayerData* playerData;
+	ClientID opponentID;
+};
 
 // server manager
 class DemoPeerManager : public egpNetPeerManager
@@ -22,7 +32,7 @@ class DemoPeerManager : public egpNetPeerManager
 	//	packet: pointer to packet
 	//	packetIndex: index in sequence of processed packets
 	// return 0 to stop processing packets
-	virtual int ProcessPacket(const RakNet::Packet *const packet, const unsigned int packetIndex) const;
+	virtual int ProcessPacket(const RakNet::Packet *const packet, const unsigned int packetIndex);
 
 public: 
 
@@ -35,20 +45,17 @@ public:
 		UPDATE_GAME_STATE, // Server sends client update of all current entities
 		PLAYER_COLLISION,
 		PLAYER_WIN_ROUND,
-		PLAYER_WIN_MATCH,
-		// ****TO-DO: implement general identifiers
-		// these should be peer-type-agnostic, i.e. either server or client
-		// some suggestions: 
-		//	e_id_stateInput,	// packet data contains remote input
-		//	e_id_stateData,		// packet data contains info about game state
-		// etc.
-
+		UPDATE_COMBAT_PLAYER,
+		SERVER_SHUTDOWN,
 		// end; indicates where specialized managers can start
 		e_id_packetEnd
 	};
 
+	std::vector<PlayerData*> pendingPlayerUpdates;
+	std::vector<CombatPlayerData*> pendingAttackers;
+
 	// ctor
-	DemoPeerManager();
+	DemoPeerManager() = default;
 
 	// dtor
 	virtual ~DemoPeerManager();
@@ -73,6 +80,8 @@ public:
 	void sendEntity(RakNet::BitStream* bs, int peer = -1) const;
 
 	bool checkLatency(RakNet::Time latency);
+
+	PlayerData* createPlayerFromPacket(RakNet::BitStream* _entityData);
 
 	static RakNet::Time calcLatency(RakNet::Time _timeRecieved, RakNet::Time _timeSent);
 

@@ -1,5 +1,4 @@
 #include "PlayerData.h"
-
 PlayerData::PlayerData()
 {
 	unresolved = true;
