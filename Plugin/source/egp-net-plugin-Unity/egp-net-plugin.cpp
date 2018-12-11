@@ -143,6 +143,41 @@ extern "C"
 	}
 
 	__declspec(dllexport)	// tmp linker flag, forces lib to exist
+	bool getNextCollisionUpdate(int* guid1Length, char** guid1, int* guid2Length, char** guid2)
+	{
+		if (collisionUpdates->size() == 0)
+			return false;
+
+		CollisionUpdate* currUpdate = collisionUpdates->front();
+		collisionUpdates->pop();
+
+		*guid1Length = currUpdate->guidLength1;
+		*guid1 = currUpdate->guid1;
+		*guid2Length = currUpdate->guidLength2;
+		*guid2 = currUpdate->guid2;
+
+		return true;
+	}
+
+	__declspec(dllexport)	// tmp linker flag, forces lib to exist
+	bool getNextRoundWinUpdate(int* winnerGuidLength, char** winnerGuid, int* loserGuidLength, char** loserGuid, bool* draw)
+	{
+		if (roundWinUpdates->size() == 0)
+			return false;
+
+		RoundWinUpdate* currUpdate = roundWinUpdates->front();
+		roundWinUpdates->pop();
+
+		*winnerGuidLength = currUpdate->winnerGuidLength;
+		*winnerGuid = currUpdate->winnerGuid;
+		*loserGuidLength = currUpdate->loserGuidLength;
+		*loserGuid = currUpdate->loserGuid;
+		*draw = currUpdate->draw;
+
+		return true;
+	}
+
+	__declspec(dllexport)	// tmp linker flag, forces lib to exist
 	int handlePacket()
 	{
 		RakNet::Packet* packet;

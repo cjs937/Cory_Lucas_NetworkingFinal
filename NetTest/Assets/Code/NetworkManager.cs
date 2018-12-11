@@ -12,9 +12,11 @@ enum MessageID
     e_id_packetBegin = 134,
 
     ID_GAME_MESSAGE_1,
-    UPDATE_NETWORK_PLAYER, // Client sends server a single entity
-    UPDATE_GAME_STATE, // Server sends client update of all current entities
-    UPDATE_COMBAT_STATE,
+		UPDATE_NETWORK_PLAYER, // Client sends server a single entity
+		UPDATE_GAME_STATE, // Server sends client update of all current entities
+		PLAYER_COLLISION,
+		PLAYER_WIN_ROUND,
+		PLAYER_WIN_MATCH,
 
     // ****TO-DO: implement general identifiers
     // these should be peer-type-agnostic, i.e. either server or client
@@ -49,6 +51,10 @@ public class NetworkManager : MonoBehaviour
     private static extern bool sendEntityToServer(int guidSize, byte[] guid, SimpleVector3 position, SimpleVector3 destination);
     [DllImport("egp-net-plugin-Unity")]
     private static extern bool getNextEntityUpdate(ref int guidLength, ref byte[] guid, ref SimpleVector3 position, ref SimpleVector3 destination, ref UInt64 latency);
+    [DllImport("egp-net-plugin-Unity")]
+    private static extern bool getNextCollisionUpdate(ref int guid1Length, ref byte[] guid1, ref int guid2Length, ref byte[] guid2);
+    [DllImport("egp-net-plugin-Unity")]
+    private static extern bool getNextRoundWinUpdate(ref int winnerGuidLength, ref byte[] winnerGuid, ref int loserGuidLength, ref byte[] loserGuid, ref bool draw);
 
     // We want to send data to the server 10 times a second
     private const float networkTickRateMS = 100.0f / 1000.0f;
@@ -56,7 +62,8 @@ public class NetworkManager : MonoBehaviour
     private float lastNetworkUpdate;
 
     private int entityUpdatesWaiting;
-    private int combatUpdatesWaiting;
+    private int collisionUpdatesWaiting;
+    private int roundWinUpdatesWaiting;
 
     // Start is called before the first frame update
     void Start()
@@ -125,9 +132,17 @@ public class NetworkManager : MonoBehaviour
         {
             entityUpdatesWaiting++;
         }
-        else if (packetType == (int) MessageID.UPDATE_COMBAT_STATE)
+        //else if (packetType == (int) MessageID.UPDATE_COMBAT_STATE)
+        //{
+        //    combatUpdatesWaiting++;
+        //}
+        else if (packetType == (int) MessageID.PLAYER_COLLISION)
         {
-            combatUpdatesWaiting++;
+            collisionUpdatesWaiting++;
+        }
+        else if (packetType == (int) MessageID.PLAYER_WIN_ROUND)
+        {
+            roundWinUpdatesWaiting++;
         }
         
         Debug.Log("Unknown packet recieved: " + packetType);
