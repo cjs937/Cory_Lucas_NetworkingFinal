@@ -50,10 +50,13 @@ MonoBehaviour:
   swSprite: {fileID: 21300000, guid: 93db46eb15cc653479a41404b743cd82, type: 3}
   spriteRenderer: {fileID: 8691098081085853562}
   speed: 2
+  collisionRadius: 2
+  inCombat: 0
   moveDirection: {x: 0, y: 0, z: 0}
   moveDestination: {x: 0, y: 0, z: 0}
+  latency: 0
   deadReckon: 0
-  serverPosTest: {fileID: 0}
+  serverPos: {x: 0, y: 0, z: 0}
 --- !u!212 &8691098081085853562
 SpriteRenderer:
   m_ObjectHideFlags: 0

@@ -232,7 +232,9 @@ public class NetworkManager : MonoBehaviour
         destination.y = send.moveDestination.y;
         destination.z = send.moveDestination.z;
 
-        sendEntityToServer(guidSize, guidPtr, position, destination, 0.5f, false, 0);
+        Debug.Log(send.collisionRadius);
+
+        sendEntityToServer(guidSize, guidPtr, position, destination, send.collisionRadius, send.inCombat, 0);
 
         string guidstr = "";
         for (int i = 0; i < guidSize; i++)

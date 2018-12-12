@@ -12,6 +12,8 @@ public abstract class Entity : MonoBehaviour
     public SpriteRenderer spriteRenderer;
 
     public float speed;
+    public float collisionRadius;
+    public bool inCombat;
     //public Vector3 velocity;
     public Vector3 moveDirection;
     public Vector3 moveDestination;
