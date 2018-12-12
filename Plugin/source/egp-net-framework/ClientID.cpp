@@ -10,7 +10,7 @@ ClientID::ClientID(RakNet::BitStream* bs)
 
 	guid = (char*)malloc(guidLength);
 
-	for (int i = 0; i < guidLength; i++)
+	for (int i = 0; i < guidLength+1; i++)
 	{
 		bs->Read(guid[i]);
 	}

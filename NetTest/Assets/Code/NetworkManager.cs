@@ -48,7 +48,7 @@ public class NetworkManager : MonoBehaviour
     [DllImport("egp-net-plugin-Unity")]
     private static extern IntPtr plsreturn(ref int length);
     [DllImport("egp-net-plugin-Unity")]
-    private static extern bool sendEntityToServer(int guidSize, byte[] guid, SimpleVector3 position, SimpleVector3 destination, float collisionRadius, bool inCombat, int currentAttack);
+    private static extern bool sendEntityToServer(int guidSize, IntPtr guid, SimpleVector3 position, SimpleVector3 destination, float collisionRadius, bool inCombat, int currentAttack);
     [DllImport("egp-net-plugin-Unity")]
     private static extern bool sendCombatUpdateToServer(int guidSize, byte[] guid, SimpleVector3 position, SimpleVector3 destination, float collisionRadius, bool inCombat, int currentAttack, int opponentGuidLength, byte[] opponentGuid);
     [DllImport("egp-net-plugin-Unity")]
@@ -219,6 +219,9 @@ public class NetworkManager : MonoBehaviour
         byte[] guidBytes = send.identifier.ToByteArray();
         int guidSize = guidBytes.Length;
 
+        IntPtr guidPtr = Marshal.AllocHGlobal(guidSize);
+        Marshal.Copy(guidBytes, 0, guidPtr, guidSize);
+
         SimpleVector3 position;
         position.x = send.transform.position.x;
         position.y = send.transform.position.y;
@@ -229,7 +232,14 @@ public class NetworkManager : MonoBehaviour
         destination.y = send.moveDestination.y;
         destination.z = send.moveDestination.z;
 
-        sendEntityToServer(guidSize, guidBytes, position, destination, 0.5f, false, 0);
+        sendEntityToServer(guidSize, guidPtr, position, destination, 0.5f, false, 0);
+
+        string guidstr = "";
+        for (int i = 0; i < guidSize; i++)
+        {
+            guidstr += (char)guidBytes[i];
+        }
+        Debug.Log(guidstr);
     }
 
     private void HandleNetworking()
