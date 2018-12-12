@@ -5,12 +5,17 @@ using UnityEngine;
 
 public class LocalPlayer : Entity
 {
+    void Awake()
+    {
+        if (SceneController.localPlayer && SceneController.localPlayer != this)
+            Destroy(gameObject);
+    }
+
     // Start is called before the first frame update
     override protected void EntityStart()
     {
         identifier = Guid.NewGuid();
 
-        DontDestroyOnLoad(gameObject);
     }
 
     // Update is called once per frame

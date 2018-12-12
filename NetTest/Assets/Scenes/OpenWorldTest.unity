@@ -123,6 +123,7 @@ GameObject:
   - component: {fileID: 444921552}
   - component: {fileID: 444921554}
   - component: {fileID: 444921553}
+  - component: {fileID: 444921555}
   m_Layer: 0
   m_Name: Entities
   m_TagString: Untagged
@@ -228,6 +229,18 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!114 &444921555
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 444921551}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f935b52dc625624f999ae17c2c17722, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &489379872
 GameObject:
   m_ObjectHideFlags: 0
@@ -2168,8 +2181,6 @@ MonoBehaviour:
   speed: 2
   moveDirection: {x: 0, y: 0, z: 0}
   moveDestination: {x: 0, y: 0, z: 0}
-  deadReckon: 0
-  serverPosTest: {fileID: 1448224700}
 --- !u!1 &1262319916
 GameObject:
   m_ObjectHideFlags: 0
@@ -2629,6 +2640,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enableNetworking: 1
   sceneManager: {fileID: 2080143894}
+  ip: 127.0.0.1
 --- !u!114 &2080143894
 MonoBehaviour:
   m_ObjectHideFlags: 0

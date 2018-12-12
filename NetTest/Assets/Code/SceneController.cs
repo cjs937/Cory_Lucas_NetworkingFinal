@@ -18,6 +18,17 @@ public class SceneController : MonoBehaviour
 
     public static Queue<EntityPacket> entityPackets;
 
+    public static SceneController instance;
+
+
+    private void Awake()
+    {
+        if (SceneController.instance && SceneController.instance != this)
+            Destroy(gameObject);
+        else
+            SceneController.instance = this;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -49,6 +60,9 @@ public class SceneController : MonoBehaviour
                 Debug.Log("FIGHT");
             }
         }
+
+        if (Input.GetKeyDown(KeyCode.Space))
+            SwitchToOpenWorld();
     }
 
     public static bool checkWallCollision(Vector3 pos)
@@ -143,7 +157,24 @@ public class SceneController : MonoBehaviour
     static public void SwitchToCombatScene(Guid _opponentID)
     {
         RPSManager.opponentGuid = _opponentID;
+        localPlayer.transform.SetParent(null);
+        DontDestroyOnLoad(localPlayer.gameObject);
 
         SceneManager.LoadScene("BattleScene");
+    }
+
+    static public void SwitchToOpenWorld()
+    {
+        SceneManager.LoadScene("OpenWorldTest");
+    }
+
+    private void OnLevelWasLoaded(int level)
+    {
+        if(SceneManager.GetSceneByBuildIndex(level) == SceneManager.GetSceneByName("OpenWorldTest"))
+        {
+            floorLayer = GameObject.Find("Floor").GetComponent<Tilemap>();
+            entityLayer = GameObject.Find("Entities").GetComponent<Tilemap>();
+            wallLayer = GameObject.Find("Wall").GetComponent<Tilemap>();
+        }
     }
 }
