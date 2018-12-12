@@ -22,8 +22,8 @@ ClientID::ClientID(int _length, char* _guid) : guidLength(_length), guid(_guid)
 
 ClientID::~ClientID()
 {
-	if (guid != nullptr)
-		delete[] guid;
+	//if (guid != nullptr)
+	//	delete[] guid;
 }
 
 bool ClientID::operator==(ClientID const & _compareTo) const

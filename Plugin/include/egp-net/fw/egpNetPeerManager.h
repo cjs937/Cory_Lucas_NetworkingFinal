@@ -37,7 +37,7 @@ class egpNetPeerManager abstract
 	int TerminatePeer();
 	int ConnectPeer(const char address[16], const unsigned short portOffset);
 	int DisconnectPeer();
-	int ProcessAllPackets() const;
+	int ProcessAllPackets();
 	void ResetValues();
 
 	// connection counts for easy access: inbound only and total
@@ -90,7 +90,7 @@ protected:
 	//	packet: pointer to packet
 	//	packetIndex: index in sequence of processed packets
 	// return 0 to stop processing packets
-	virtual int ProcessPacket(const RakNet::Packet *const packet, const unsigned int packetIndex) const;
+	virtual int ProcessPacket(const RakNet::Packet *const packet, const unsigned int packetIndex);
 
 
 
@@ -154,7 +154,7 @@ public:
 
 	// api for networking update; publicly accessible for non-threaded networking
 	// return packet count, 0 if no packets processed or not set up, -1 if threaded (fails)
-	virtual int HandleNetworking() const;
+	virtual int HandleNetworking();
 
 
 	// get port with offset from default for this app

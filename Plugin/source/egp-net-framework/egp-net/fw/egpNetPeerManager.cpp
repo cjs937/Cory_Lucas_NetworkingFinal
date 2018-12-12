@@ -99,7 +99,7 @@ int egpNetPeerManager::DisconnectPeer()
 	return -1;
 }
 
-int egpNetPeerManager::ProcessAllPackets() const
+int egpNetPeerManager::ProcessAllPackets()
 {
 	RakNet::Packet *packet;
 	unsigned int i;
@@ -158,7 +158,7 @@ egpNetPeerManager::egpNetPeerManager()
 
 
 // process individual packet
-int egpNetPeerManager::ProcessPacket(const RakNet::Packet *const packet, const unsigned int packetIndex) const
+int egpNetPeerManager::ProcessPacket(const RakNet::Packet *const packet, const unsigned int packetIndex)
 {
 	// ****TO-DO: implement base class packet processor
 	//	-> base class should process only peer-type-agnostic packets, perhaps 
@@ -306,7 +306,7 @@ int egpNetPeerManager::Disconnect()
 
 
 // networking update
-int egpNetPeerManager::HandleNetworking() const
+int egpNetPeerManager::HandleNetworking()
 {
 	if (mp_peer)
 	{

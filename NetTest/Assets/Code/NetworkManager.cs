@@ -52,11 +52,11 @@ public class NetworkManager : MonoBehaviour
     [DllImport("egp-net-plugin-Unity")]
     private static extern bool sendCombatUpdateToServer(int guidSize, byte[] guid, SimpleVector3 position, SimpleVector3 destination, float collisionRadius, bool inCombat, int currentAttack, int opponentGuidLength, byte[] opponentGuid);
     [DllImport("egp-net-plugin-Unity")]
-    private static extern bool getNextEntityUpdate(ref int guidLength, ref byte[] guid, ref SimpleVector3 position, ref SimpleVector3 destination, ref UInt64 latency);
+    private static extern bool getNextEntityUpdate(ref int guidLength, out IntPtr guid, ref SimpleVector3 position, ref SimpleVector3 destination, ref UInt64 latency);
     [DllImport("egp-net-plugin-Unity")]
-    private static extern bool getNextCollisionUpdate(ref int guid1Length, ref byte[] guid1, ref int guid2Length, ref byte[] guid2);
+    private static extern bool getNextCollisionUpdate(ref int guid1Length, out IntPtr guid1, ref int guid2Length, ref byte[] guid2);
     [DllImport("egp-net-plugin-Unity")]
-    private static extern bool getNextRoundWinUpdate(ref int winnerGuidLength, ref byte[] winnerGuid, ref int loserGuidLength, ref byte[] loserGuid, ref bool draw);
+    private static extern bool getNextRoundWinUpdate(ref int winnerGuidLength, out IntPtr winnerGuid, ref int loserGuidLength, ref byte[] loserGuid, ref bool draw);
 
     // We want to send data to the server 10 times a second
     private const float networkTickRateMS = 100.0f / 1000.0f;
@@ -108,6 +108,57 @@ public class NetworkManager : MonoBehaviour
                 // loop through all updates
                 // if we have that entity, update it
                 // if we don't, create it
+                for (int i = 0; i < entityUpdatesWaiting; i++)
+                { 
+                    Debug.Log("Update Network Player");
+
+                    Guid entityGuid;
+                    int guidLength = 0;
+                    IntPtr guidReturn = IntPtr.Zero;
+                    SimpleVector3 position = new SimpleVector3(0.0f,0.0f,0.0f);
+                    SimpleVector3 destination = new SimpleVector3(0.0f, 0.0f, 0.0f);
+                    UInt64 latency = 0;
+
+                    if (!getNextEntityUpdate(ref guidLength, out guidReturn, ref position, ref destination, ref latency))
+                    {
+                        return;
+                    }
+
+                    byte[] guidBytes = new byte[guidLength];
+                    Marshal.Copy(guidReturn, guidBytes, 0, guidLength);
+
+                    entityGuid = bytesToGuid(guidBytes, 0, guidLength);
+
+                    if (sceneManager)
+                    {
+                        EntityPacket newPacket;
+                        newPacket.identifier = entityGuid;
+                        newPacket.position = new Vector3(position.x, position.y, position.z);
+                        newPacket.destination = new Vector3(destination.x, destination.y, destination.z);
+                        newPacket.latency = 0.0f;
+
+                        // Debug.Log(identifer);
+
+                        SceneManager.entityPackets.Enqueue(newPacket);
+                    }
+                    //
+                    //EntityPacket newPacket;
+                    //newPacket.identifier = identifer;
+                    //newPacket.position = position;
+                    //newPacket.destination = destination;
+                    //newPacket.latency = 0.0f; // get latency from returnData
+                    //
+                    ////Debug.Log(identifer);
+                    //
+                    //if (sceneManager)
+                    //{
+                    //    SceneManager.entityPackets.Enqueue(newPacket);
+                    //}
+                    //
+                    //Debug.Log("indexfinal: " + index);
+
+
+                }
             }
             if (collisionUpdatesWaiting > 0)
             {
@@ -155,24 +206,22 @@ public class NetworkManager : MonoBehaviour
         {
             return;
         }
-        else if (packetType == (int) MessageID.UPDATE_GAME_STATE)
+        else if (packetType == (int)MessageID.UPDATE_NETWORK_PLAYER)
         {
             entityUpdatesWaiting++;
         }
-        //else if (packetType == (int) MessageID.UPDATE_COMBAT_STATE)
-        //{
-        //    combatUpdatesWaiting++;
-        //}
-        else if (packetType == (int) MessageID.PLAYER_COLLISION)
+        else if (packetType == (int)MessageID.PLAYER_COLLISION)
         {
             collisionUpdatesWaiting++;
         }
-        else if (packetType == (int) MessageID.PLAYER_WIN_ROUND)
+        else if (packetType == (int)MessageID.PLAYER_WIN_ROUND)
         {
             roundWinUpdatesWaiting++;
         }
-        
-        Debug.Log("Unknown packet recieved: " + packetType);
+        else
+        {
+            Debug.Log("Unknown packet recieved: " + packetType);
+        }
     }
 
     //private void HandleNetworking()
@@ -316,6 +365,14 @@ public struct EntityPacket
 [StructLayout(LayoutKind.Sequential)]
 struct SimpleVector3
 {
+    
+    public SimpleVector3(float _x, float _y, float _z)
+    {
+        x = _x;
+        y = _y;
+        z = _z;
+    }
+
     public float x;
     public float y;
     public float z;

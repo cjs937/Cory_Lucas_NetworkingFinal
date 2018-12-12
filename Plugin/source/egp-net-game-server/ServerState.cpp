@@ -150,7 +150,7 @@ void ServerState::checkWorldCollisions()
 			thisPlayer->unresolved = false;
 		}
 
-		std::cout << "donecheckin\n";
+		//std::cout << "donecheckin\n";
 	}
 }
 
