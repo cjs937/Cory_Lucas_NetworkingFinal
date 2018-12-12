@@ -3,8 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.SceneManagement;
 
-public class SceneManager : MonoBehaviour
+public class SceneController : MonoBehaviour
 {
     public Entity entityPrefab;
     public static Tilemap floorLayer;
@@ -13,7 +14,7 @@ public class SceneManager : MonoBehaviour
     
     public static LocalPlayer localPlayer;
 
-    private static List<Entity> entities;
+    public static List<Entity> entities;
 
     public static Queue<EntityPacket> entityPackets;
 
@@ -33,6 +34,7 @@ public class SceneManager : MonoBehaviour
         //testEnemy.transform.SetParent(entityLayer.transform);
         //testEnemy.transform.localPosition = new Vector3(3, 3, 0);
         //entities.Add(testEnemy.GetComponent<Entity>());
+        DontDestroyOnLoad(this);
     }
 
     // Update is called once per frame
@@ -136,5 +138,12 @@ public class SceneManager : MonoBehaviour
         newEntity.latency = data.latency;
         newEntity.deadReckon = true;
         newEntity.UpdateState(data);
+    }
+
+    static public void SwitchToCombatScene(Guid _opponentID)
+    {
+        RPSManager.opponentGuid = _opponentID;
+
+        SceneManager.LoadScene("BattleScene");
     }
 }

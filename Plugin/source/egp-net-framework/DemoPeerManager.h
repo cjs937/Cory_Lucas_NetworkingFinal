@@ -15,6 +15,7 @@
 #include "egp-net/fw/egpNetPeerManager.h"
 #include <vector>
 #include <queue>
+#include <mutex>
 #include "ClientID.h"
 
 struct PlayerData;
@@ -51,6 +52,7 @@ public:
 		e_id_packetEnd
 	};
 
+	std::mutex dataLock;
 	std::vector<PlayerData*> pendingPlayerUpdates;
 	std::vector<CombatPlayerData*> pendingAttackers;
 

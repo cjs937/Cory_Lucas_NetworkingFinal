@@ -54,7 +54,7 @@ int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const uns
 		stream.IgnoreBytes(sizeof(RakNet::Time));
 
 		//ServerState::getInstance()->addPlayerData(&stream);
-
+		std::lock_guard<std::mutex> lock(DemoPeerManager::dataLock);
 		pendingPlayerUpdates.push_back(createPlayerFromPacket(&stream));
 
 		std::cout << "Done" << std::endl;
@@ -75,6 +75,8 @@ int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const uns
 		combatPlayer->playerData = player;
 		combatPlayer->opponentID;
 
+
+		std::lock_guard<std::mutex> lock(DemoPeerManager::dataLock);
 		pendingAttackers.push_back(combatPlayer);
 
 		break;

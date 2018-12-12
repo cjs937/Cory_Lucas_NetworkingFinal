@@ -5,11 +5,12 @@ using UnityEngine;
 
 public class LocalPlayer : Entity
 {
-    
     // Start is called before the first frame update
     override protected void EntityStart()
     {
         identifier = Guid.NewGuid();
+
+        DontDestroyOnLoad(gameObject);
     }
 
     // Update is called once per frame
@@ -24,8 +25,8 @@ public class LocalPlayer : Entity
             attemptMove = new Vector3(attemptMove.x, attemptMove.y, 0);
 
             // Make sure we don't try to move into a wall or off of the floor
-            if (!SceneManager.checkWallCollision(attemptMove)
-                && SceneManager.checkFloorCollision(attemptMove))
+            if (!SceneController.checkWallCollision(attemptMove)
+                && SceneController.checkFloorCollision(attemptMove))
             {
                 moveDestination = attemptMove;
                 moveDirection = moveDestination - transform.position;

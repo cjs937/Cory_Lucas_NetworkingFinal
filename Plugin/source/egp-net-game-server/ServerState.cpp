@@ -4,6 +4,8 @@
 #include "egp-net-framework/DemoPeerManager.h"
 #include "egp-net-framework/PlayerData.h"
 
+#include <mutex>
+
 ServerState::ServerState()
 {
 	runLoop = true;
@@ -36,6 +38,7 @@ void ServerState::updateState()
 		//Clear data list
 		std::queue<PlayerData*> unresolvedData; //unresolved means that the data hasn't been used for anything yet
 
+		std::lock_guard<std::mutex> lock(DemoPeerManager::getInstance()->dataLock);
 		for (int i = 0; i < dataThisFrame->size(); ++i)
 		{
 			if ((*dataThisFrame)[i])

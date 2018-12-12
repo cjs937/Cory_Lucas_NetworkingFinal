@@ -32,7 +32,7 @@ enum MessageID
 public class NetworkManager : MonoBehaviour
 {
     public bool enableNetworking;
-    public SceneManager sceneManager; // TODO: Replace with entity manager for final.
+    public SceneController sceneManager; // TODO: Replace with entity manager for final.
     public string ip = "127.0.0.1";
 
     [DllImport("egp-net-plugin-Unity")]
@@ -54,9 +54,9 @@ public class NetworkManager : MonoBehaviour
     [DllImport("egp-net-plugin-Unity")]
     private static extern bool getNextEntityUpdate(ref int guidLength, out IntPtr guid, ref SimpleVector3 position, ref SimpleVector3 destination, ref UInt64 latency);
     [DllImport("egp-net-plugin-Unity")]
-    private static extern bool getNextCollisionUpdate(ref int guid1Length, out IntPtr guid1, ref int guid2Length, ref byte[] guid2);
+    private static extern bool getNextCollisionUpdate(ref int guid1Length, out IntPtr guid1, ref int guid2Length, out IntPtr guid2);
     [DllImport("egp-net-plugin-Unity")]
-    private static extern bool getNextRoundWinUpdate(ref int winnerGuidLength, out IntPtr winnerGuid, ref int loserGuidLength, ref byte[] loserGuid, ref bool draw);
+    private static extern bool getNextRoundWinUpdate(ref int winnerGuidLength, out IntPtr winnerGuid, ref int loserGuidLength, out IntPtr loserGuid, ref bool draw);
 
     // We want to send data to the server 10 times a second
     private const float networkTickRateMS = 100.0f / 1000.0f;
@@ -96,7 +96,7 @@ public class NetworkManager : MonoBehaviour
                 // Reset the timer
                 lastNetworkUpdate = Time.time;
                 // Debug Test
-                SendEntity(SceneManager.localPlayer);
+                SendEntity(SceneController.localPlayer);
             }
 
             // Check for and queue packets as fast and often as we can.
@@ -139,7 +139,7 @@ public class NetworkManager : MonoBehaviour
 
                         // Debug.Log(identifer);
 
-                        SceneManager.entityPackets.Enqueue(newPacket);
+                        SceneController.entityPackets.Enqueue(newPacket);
                     }
                     //
                     //EntityPacket newPacket;
@@ -164,6 +164,40 @@ public class NetworkManager : MonoBehaviour
             {
                 for (int i = 0; i < collisionUpdatesWaiting; i++)
                 {
+                    Guid player1Guid;
+                    int guid1Length = 0;
+                    IntPtr guid1Return = IntPtr.Zero;
+                    Guid player2Guid;
+                    int guid2Length = 0;
+                    IntPtr guid2Return = IntPtr.Zero;
+
+                    if (!getNextCollisionUpdate(ref guid1Length, out guid1Return, ref guid2Length, out guid2Return))
+                        return;
+
+                    byte[] guid1Bytes = new byte[guid1Length];
+                    Marshal.Copy(guid1Return, guid1Bytes, 0, guid1Length);
+
+                    player1Guid = bytesToGuid(guid1Bytes, 0, guid1Length);
+
+                    byte[] guid2Bytes = new byte[guid2Length];
+                    Marshal.Copy(guid2Return, guid2Bytes, 0, guid2Length);
+
+                    player2Guid = bytesToGuid(guid2Bytes, 0, guid2Length);
+
+                    Guid opponentID;
+                    if (player1Guid == SceneController.localPlayer.identifier)
+                    {
+                        opponentID = player2Guid;
+                    }
+                    else if (player2Guid == SceneController.localPlayer.identifier)
+                    {
+                        opponentID = player1Guid;
+                    }
+                    else
+                        continue;
+
+                    SceneController.SwitchToCombatScene(opponentID);
+
                     //TODO:
                     // if either of i's guids are our local player's
                     // set the other guid in rps manager and then
