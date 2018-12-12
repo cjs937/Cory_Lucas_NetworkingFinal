@@ -311,15 +311,17 @@ extern "C"
 				{
 					bsIn.Read(update->guid1[i]);
 				}
+				update->guid1[update->guidLength1] = '\0';
 
 				// Player 2
 				bsIn.Read(update->guidLength2);
 				update->guid2 = (char*)malloc(update->guidLength2);
 
-				for (int i = 0; i < update->guidLength2; i++)
+				for (int i = 0; i < update->guidLength2 + 1; i++)
 				{
 					bsIn.Read(update->guid2[i]);
 				}
+				update->guid2[update->guidLength2] = '\0';
 
 				collisionUpdates->push(update);
 

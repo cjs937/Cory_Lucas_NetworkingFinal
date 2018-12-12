@@ -24,7 +24,7 @@ public class LocalPlayer : Entity
 
         move();
 
-        if (Input.GetMouseButton(0))
+        if (!inCombat && Input.GetMouseButton(0))
         {
             Vector3 attemptMove = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             attemptMove = new Vector3(attemptMove.x, attemptMove.y, 0);

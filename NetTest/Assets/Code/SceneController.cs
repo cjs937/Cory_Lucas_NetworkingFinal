@@ -53,13 +53,13 @@ public class SceneController : MonoBehaviour
     {
         UpdateEntityStates();
 
-        foreach (Entity e in entities)
-        {
-            if (Vector3.Distance(localPlayer.transform.position, e.transform.position) < 0.5f)
-            {
-                Debug.Log("FIGHT");
-            }
-        }
+        //foreach (Entity e in entities)
+        //{
+        //    if (Vector3.Distance(localPlayer.transform.position, e.transform.position) < 0.5f)
+        //    {
+        //        //Debug.Log("FIGHT");
+        //    }
+        //}
 
         if (Input.GetKeyDown(KeyCode.Space))
             SwitchToOpenWorld();
@@ -159,12 +159,15 @@ public class SceneController : MonoBehaviour
         RPSManager.opponentGuid = _opponentID;
         localPlayer.transform.SetParent(null);
         DontDestroyOnLoad(localPlayer.gameObject);
+        localPlayer.inCombat = true;
+
 
         SceneManager.LoadScene("BattleScene");
     }
 
     static public void SwitchToOpenWorld()
     {
+        localPlayer.inCombat = false;
         SceneManager.LoadScene("OpenWorldTest");
     }
 

@@ -110,7 +110,7 @@ public class NetworkManager : MonoBehaviour
                 // if we don't, create it
                 for (int i = 0; i < entityUpdatesWaiting; i++)
                 { 
-                    Debug.Log("Update Network Player");
+                    //Debug.Log("Update Network Player");
 
                     Guid entityGuid;
                     int guidLength = 0;
@@ -119,9 +119,9 @@ public class NetworkManager : MonoBehaviour
                     SimpleVector3 destination = new SimpleVector3(0.0f, 0.0f, 0.0f);
                     UInt64 latency = 0;
 
-                    if (!getNextEntityUpdate(ref guidLength, out guidReturn, ref position, ref destination, ref latency))
+                    if (!getNextEntityUpdate(ref guidLength, out guidReturn, ref position, ref destination, ref latency) || SceneController.localPlayer.inCombat)
                     {
-                        return;
+                        continue;
                     }
 
                     byte[] guidBytes = new byte[guidLength];
@@ -159,9 +159,11 @@ public class NetworkManager : MonoBehaviour
 
 
                 }
+                entityUpdatesWaiting = 0;
             }
             if (collisionUpdatesWaiting > 0)
             {
+                Debug.Log("We have " + collisionUpdatesWaiting + " collision updates.");
                 for (int i = 0; i < collisionUpdatesWaiting; i++)
                 {
                     Guid player1Guid;
@@ -171,8 +173,10 @@ public class NetworkManager : MonoBehaviour
                     int guid2Length = 0;
                     IntPtr guid2Return = IntPtr.Zero;
 
-                    if (!getNextCollisionUpdate(ref guid1Length, out guid1Return, ref guid2Length, out guid2Return))
-                        return;
+                    if (!getNextCollisionUpdate(ref guid1Length, out guid1Return, ref guid2Length, out guid2Return) || SceneController.localPlayer.inCombat)
+                    {
+                        continue;
+                    }
 
                     byte[] guid1Bytes = new byte[guid1Length];
                     Marshal.Copy(guid1Return, guid1Bytes, 0, guid1Length);
@@ -202,6 +206,7 @@ public class NetworkManager : MonoBehaviour
                     // if either of i's guids are our local player's
                     // set the other guid in rps manager and then
                     // switch to the combat scene
+                    collisionUpdatesWaiting = 0;
                 }
             }
             if (roundWinUpdatesWaiting > 0)
@@ -232,7 +237,7 @@ public class NetworkManager : MonoBehaviour
         destination.y = send.moveDestination.y;
         destination.z = send.moveDestination.z;
 
-        Debug.Log(send.collisionRadius);
+        //Debug.Log(send.collisionRadius);
 
         sendEntityToServer(guidSize, guidPtr, position, destination, send.collisionRadius, send.inCombat, 0);
 
@@ -241,7 +246,7 @@ public class NetworkManager : MonoBehaviour
         {
             guidstr += (char)guidBytes[i];
         }
-        Debug.Log(guidstr);
+        //Debug.Log(guidstr);
     }
 
     private void HandleNetworking()
@@ -269,88 +274,6 @@ public class NetworkManager : MonoBehaviour
             Debug.Log("Unknown packet recieved: " + packetType);
         }
     }
-
-    //private void HandleNetworking()
-    //{
-    //    int length = 0;
-    //    IntPtr returnPtr = handlePacket(ref length);
-    //
-    //    byte[] returnData = new byte[length];
-    //    int index = 0;
-    //
-    //    Marshal.Copy(returnPtr, returnData, 0, length);
-    //
-    //    if (returnData.Length == 0 || returnData.Length == 9 || returnData[0] == 110)
-    //        return;
-    //    
-    //    Debug.Log("Len: " + length);
-    //    Debug.Log("Ret0 " + returnData[0]);
-    //
-    //    int messageID = returnData[index];
-    //    index++;
-    //
-    //    //Debug.Log(messageID);
-    //    switch (messageID)
-    //    {
-    //       case (int)MessageID.UPDATE_NETWORK_PLAYER:
-    //       {
-    //            Debug.Log("Update Network Player");
-    //                
-    //            UInt64 latency = bytesToUInt64(returnData, index);
-    //            Debug.Log(latency);
-    //            index += 8;
-    //
-    //            index += 3;
-    //            int guidLength = returnData[index];
-    //            index++;
-    //            
-    //            Guid identifer = bytesToGuid(returnData, index, guidLength);
-    //            index += guidLength;
-    //            
-    //            Vector3 position = new Vector3();
-    //            position.z = bytesToFloat(returnData, index);
-    //            index += 4;
-    //            position.y = bytesToFloat(returnData, index);
-    //            index += 4;
-    //            position.x = bytesToFloat(returnData, index);
-    //            index += 4;
-    //            
-    //            Vector3 destination = new Vector3();
-    //            destination.z = bytesToFloat(returnData, index);
-    //            index += 4;
-    //            destination.y = bytesToFloat(returnData, index);
-    //            index += 4;
-    //            destination.x = bytesToFloat(returnData, index);
-    //            index += 4;
-    //            
-    //            EntityPacket newPacket;
-    //            newPacket.identifier = identifer;
-    //            newPacket.position = position;
-    //            newPacket.destination = destination;
-    //            newPacket.latency = 0.0f; // get latency from returnData
-    //
-    //            //Debug.Log(identifer);
-    //
-    //            if (sceneManager)
-    //            {
-    //                SceneManager.entityPackets.Enqueue(newPacket);
-    //            }
-    //
-    //            Debug.Log("indexfinal: " + index);
-    //        }
-    //            break;
-    //        case 110: // If there isn't nodata.
-    //        {
-    //        }
-    //            break;
-    //        default:
-    //        {
-    //            Debug.Log("Unknown MessageID: " + messageID);
-    //        }
-    //            break;
-    //    }
-    //    
-    //}
 
     private ulong bytesToUInt64(byte[] data, int startIndex)
     {
