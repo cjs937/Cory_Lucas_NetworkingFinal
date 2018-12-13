@@ -114,6 +114,7 @@ public class NetworkManager : MonoBehaviour
 
             if (entityUpdatesWaiting > 0)
             {
+                //sceneManager.entities
                 for (int i = 0; i < entityUpdatesWaiting; i++)
                 { 
                     //Debug.Log("Update Network Player");

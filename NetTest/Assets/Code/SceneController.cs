@@ -157,6 +157,7 @@ public class SceneController : MonoBehaviour
         RPSManager.opponentGuid = _opponentID;
         localPlayer.transform.SetParent(null);
         DontDestroyOnLoad(localPlayer.gameObject);
+        localPlayer.gameObject.SetActive(false);
         localPlayer.inCombat = true;
 
 
@@ -167,6 +168,7 @@ public class SceneController : MonoBehaviour
     {
         entities.Clear();   
         localPlayer.inCombat = false;
+        localPlayer.gameObject.SetActive(true);
         SceneManager.LoadScene("OpenWorldTest");
     }
 
