@@ -12,13 +12,13 @@ public class RPSPlayer : MonoBehaviour
     public RPSAttack paperAttackPrefab;
     public RPSAttack scissorsAttackPrefab;
 
-    public bool player1; //testing purposes only
     [HideInInspector]
     public RPSAttack currentAttack;
 
     private void Start()
     {
-        selector.gameObject.SetActive(false);
+        if(selector)
+            selector.gameObject.SetActive(false);
     }
 
     // Update is called once per frame
@@ -26,19 +26,9 @@ public class RPSPlayer : MonoBehaviour
     {
         if(!turnComplete)
         {
-            if (player1)
+            if (Input.GetKeyDown(KeyCode.Return))
             {
-                if (Input.GetKeyDown(KeyCode.LeftShift))
-                {
-                    selectAttack();
-                }
-            }
-            else
-            {
-                if (Input.GetKeyDown(KeyCode.RightShift))
-                {
-                    selectAttack();
-                }
+                selectAttack();
             }
         }
     }

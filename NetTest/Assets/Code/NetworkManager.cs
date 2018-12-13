@@ -50,7 +50,7 @@ public class NetworkManager : MonoBehaviour
     [DllImport("egp-net-plugin-Unity")]
     private static extern bool sendEntityToServer(int guidSize, IntPtr guid, SimpleVector3 position, SimpleVector3 destination, float collisionRadius, bool inCombat, int currentAttack);
     [DllImport("egp-net-plugin-Unity")]
-    private static extern bool sendCombatUpdateToServer(int guidSize, byte[] guid, SimpleVector3 position, SimpleVector3 destination, float collisionRadius, bool inCombat, int currentAttack, int opponentGuidLength, byte[] opponentGuid);
+    private static extern bool sendCombatUpdateToServer(int guidSize, IntPtr guid, SimpleVector3 position, SimpleVector3 destination, float collisionRadius, bool inCombat, int currentAttack, int opponentGuidLength, IntPtr opponentGuid);
     [DllImport("egp-net-plugin-Unity")]
     private static extern bool getNextEntityUpdate(ref int guidLength, out IntPtr guid, ref SimpleVector3 position, ref SimpleVector3 destination, ref UInt64 latency);
     [DllImport("egp-net-plugin-Unity")]
@@ -66,6 +66,16 @@ public class NetworkManager : MonoBehaviour
     private int entityUpdatesWaiting;
     private int collisionUpdatesWaiting;
     private int roundWinUpdatesWaiting;
+
+    static public NetworkManager instance;
+
+    private void Awake()
+    {
+        if (NetworkManager.instance && NetworkManager.instance != this)
+            Destroy(gameObject);
+        else
+            NetworkManager.instance = this;
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -209,8 +219,43 @@ public class NetworkManager : MonoBehaviour
                     collisionUpdatesWaiting = 0;
                 }
             }
-            if (roundWinUpdatesWaiting > 0)
+            if (roundWinUpdatesWaiting > 0 && SceneController.localPlayer.inCombat)
             {
+                Debug.Log("We have " + roundWinUpdatesWaiting + " roundwin updates.");
+
+                Guid winnerGuid;
+                int winnerGuidLength = 0;
+                IntPtr winnerGuidReturn = IntPtr.Zero;
+
+                Guid loserGuid;
+                int loserGuidLength = 0;
+                IntPtr loserGuidReturn = IntPtr.Zero;
+
+                bool isDraw = false;
+
+                for (int i = 0; i < roundWinUpdatesWaiting; i++)
+                {
+                    if (!getNextRoundWinUpdate(ref winnerGuidLength, out winnerGuidReturn, ref loserGuidLength, out loserGuidReturn, ref isDraw))
+                    {
+                        continue;
+                    }
+                }
+
+                byte[] guidBytes = new byte[winnerGuidLength];
+                Marshal.Copy(winnerGuidReturn, guidBytes, 0, winnerGuidLength);
+
+                winnerGuid = bytesToGuid(guidBytes, 0, winnerGuidLength);
+
+                guidBytes = new byte[loserGuidLength];
+                Marshal.Copy(loserGuidReturn, guidBytes, 0, loserGuidLength);
+
+                loserGuid = bytesToGuid(guidBytes, 0, loserGuidLength);
+
+                if (winnerGuid == SceneController.localPlayer.identifier || loserGuid == SceneController.localPlayer.identifier)
+                {
+                    RPSManager.instance.recieveRoundWinner(winnerGuid, isDraw);
+                }
+
                 //TODO:
                 // loop through all updates
                 // if any of them are ours, pass that info to rps manager then
@@ -247,6 +292,23 @@ public class NetworkManager : MonoBehaviour
             guidstr += (char)guidBytes[i];
         }
         //Debug.Log(guidstr);
+    }
+
+    static public void SendCombatInfo(LocalPlayer _player, RPSType _attackType, Guid _opponentID)
+    {
+        byte[] guid1Bytes = _player.identifier.ToByteArray();
+        int guid1Size = guid1Bytes.Length;
+
+        IntPtr guid1Ptr = Marshal.AllocHGlobal(guid1Size);
+        Marshal.Copy(guid1Bytes, 0, guid1Ptr, guid1Size);
+
+        byte[] guid2Bytes = _opponentID.ToByteArray();
+        int guid2Size = guid2Bytes.Length;
+
+        IntPtr guid2Ptr = Marshal.AllocHGlobal(guid2Size);
+        Marshal.Copy(guid2Bytes, 0, guid2Ptr, guid2Size);
+
+        sendCombatUpdateToServer(guid1Size, guid1Ptr, new SimpleVector3(), new SimpleVector3(), 0, true, (int)_attackType, guid2Size, guid2Ptr);
     }
 
     private void HandleNetworking()

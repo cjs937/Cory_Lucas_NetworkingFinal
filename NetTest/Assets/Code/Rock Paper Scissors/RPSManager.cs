@@ -9,12 +9,24 @@ public class RPSManager : MonoBehaviour
     public RPSPlayer player;
     public RPSPlayer opponent;
     public Text countdownText;
+    public RPSUI rpsUI;
 
     public static Guid opponentGuid;
 
     bool selectionStage = false;
 
     int countdown = 0;
+    static public RPSManager instance;
+    public bool gameOver = false;
+    
+
+    private void Awake()
+    {
+        if (RPSManager.instance && RPSManager.instance != this)
+            Destroy(gameObject);
+        else
+            RPSManager.instance = this;
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -27,15 +39,10 @@ public class RPSManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(selectionStage && player.turnComplete && opponent.turnComplete)
+        if(selectionStage && player.turnComplete)
         {
             endSelectionStage();
         }
-        //else if(!selectionStage)
-        //{
-        //    if (Input.GetKeyDown(KeyCode.Space))
-        //        beginTurn();
-        //}
     }
 
     public void beginTurn()
@@ -55,20 +62,60 @@ public class RPSManager : MonoBehaviour
         selectionStage = false;
 
         countdownText.gameObject.SetActive(false);
+        rpsUI.waitingText.gameObject.SetActive(true);
         fireAttacks();
     }
 
     void fireAttacks()
     {
-        //TODO:
-        //send local player attack data to server
+        NetworkManager.SendCombatInfo(SceneController.localPlayer, player.currentAttack.type, opponentGuid);
     }
 
-    public void recieveRoundWinner(Guid _winnerID)
+    public void recieveRoundWinner(Guid _winnerID, bool isDraw)
     {
-        //TODO:
-        //increment/decrement win counts
-        //if any player's lives = 0 end game and send back to main scene
+        if (gameOver)
+            return;
+
+        rpsUI.waitingText.gameObject.SetActive(false);
+
+        if (!isDraw)
+        {
+            if (_winnerID == SceneController.localPlayer.identifier)
+            {
+                opponent.currentLives--;
+
+                if (opponent.currentLives <= 0)
+                    endGame(false);
+
+                displayAttacks(isDraw, player.currentAttack.type, true);
+            }
+            else
+            {
+                player.currentLives--;
+
+                if (player.currentLives <= 0)
+                    endGame(false);
+
+                displayAttacks(isDraw, player.currentAttack.type, false);
+            }
+        }
+
+        Debug.Log("Player: " + player.currentLives + " Opponent: " + opponent.currentLives);
+
+        //if (!gameOver)
+        //    beginTurn();
+    }
+
+    public void endGame(bool _playerWins)
+    {
+        gameOver = true;
+
+        rpsUI.gameOverUI.gameObject.SetActive(true);
+
+        if (_playerWins)
+            rpsUI.youWinText.gameObject.SetActive(true);
+        else
+            rpsUI.youLoseText.gameObject.SetActive(true);
     }
 
     IEnumerator timerCountdown()
@@ -93,52 +140,95 @@ public class RPSManager : MonoBehaviour
         }
     }
 
-    RPSPlayer getRPSWinner()
+    IEnumerator displayAttacks(bool _isDraw, RPSType _playerAttack, bool playerWin)//_winningAttack)
     {
-        if(player.currentAttack.type == RPSType.ROCK)
+        RPSType opponentAttack;
+
+        if (_isDraw)
         {
-            if(opponent.currentAttack.type == RPSType.ROCK)
+            opponentAttack = _playerAttack;
+        }
+        else
+        {
+            if (_playerAttack == RPSType.ROCK)
             {
-                return null;
+                if (playerWin)
+                    opponentAttack = RPSType.SCISSORS;
+                else
+                    opponentAttack = RPSType.PAPER;
             }
-            else if(opponent.currentAttack.type == RPSType.SCISSORS)
+            else if (_playerAttack == RPSType.PAPER)
             {
-                return player;
+                if (playerWin)
+                    opponentAttack = RPSType.ROCK;
+                else
+                    opponentAttack = RPSType.SCISSORS;
             }
             else
             {
-                return opponent;
+                if (playerWin)
+                    opponentAttack = RPSType.PAPER;
+                else
+                    opponentAttack = RPSType.ROCK;
             }
         }
-        else if(player.currentAttack.type == RPSType.SCISSORS)
-        {
-            if (opponent.currentAttack.type == RPSType.ROCK)
-            {
-                return opponent;
-            }
-            else if (opponent.currentAttack.type == RPSType.SCISSORS)
-            {
-                return null;
-            }
-            else
-            {
-                return player;
-            }
-        }
-        else // paper
-        {
-            if (opponent.currentAttack.type == RPSType.ROCK)
-            {
-                return player;
-            }
-            else if (opponent.currentAttack.type == RPSType.SCISSORS)
-            {
-                return opponent;
-            }
-            else
-            {
-                return null;
-            }
-        }
+
+        rpsUI.showAttacks(_playerAttack, opponentAttack);
+
+        yield return new WaitForSeconds(2.0f);
+
+        rpsUI.hideAttacks();
+
+        if(!gameOver)
+            beginTurn();
     }
+
+    //RPSPlayer getRPSWinner()
+    //{
+    //    if(player.currentAttack.type == RPSType.ROCK)
+    //    {
+    //        if(opponent.currentAttack.type == RPSType.ROCK)
+    //        {
+    //            return null;
+    //        }
+    //        else if(opponent.currentAttack.type == RPSType.SCISSORS)
+    //        {
+    //            return player;
+    //        }
+    //        else
+    //        {
+    //            return opponent;
+    //        }
+    //    }
+    //    else if(player.currentAttack.type == RPSType.SCISSORS)
+    //    {
+    //        if (opponent.currentAttack.type == RPSType.ROCK)
+    //        {
+    //            return opponent;
+    //        }
+    //        else if (opponent.currentAttack.type == RPSType.SCISSORS)
+    //        {
+    //            return null;
+    //        }
+    //        else
+    //        {
+    //            return player;
+    //        }
+    //    }
+    //    else // paper
+    //    {
+    //        if (opponent.currentAttack.type == RPSType.ROCK)
+    //        {
+    //            return player;
+    //        }
+    //        else if (opponent.currentAttack.type == RPSType.SCISSORS)
+    //        {
+    //            return opponent;
+    //        }
+    //        else
+    //        {
+    //            return null;
+    //        }
+    //    }
+    //}
 }
