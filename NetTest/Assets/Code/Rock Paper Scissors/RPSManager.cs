@@ -79,6 +79,7 @@ public class RPSManager : MonoBehaviour
             return;
 
         rpsUI.waitingText.gameObject.SetActive(false);
+        bool playerWin = false;
 
         if (!isDraw)
         {
@@ -89,7 +90,7 @@ public class RPSManager : MonoBehaviour
                 if (opponent.currentLives <= 0)
                     endGame(true);
 
-                StartCoroutine(displayAttacks(isDraw, player.currentAttack.type, true));
+                playerWin = true;
             }
             else
             {
@@ -98,14 +99,13 @@ public class RPSManager : MonoBehaviour
                 if (player.currentLives <= 0)
                     endGame(false);
 
-                StartCoroutine(displayAttacks(isDraw, player.currentAttack.type, false));        
+                playerWin = false;
             }
         }
 
         Debug.Log("Player: " + player.currentLives + " Opponent: " + opponent.currentLives);
 
-        //if (!gameOver)
-        //    beginTurn();
+        StartCoroutine(displayAttacks(isDraw, player.currentAttack.type, playerWin));
     }
 
     public void endGame(bool _playerWins)
