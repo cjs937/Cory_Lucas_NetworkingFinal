@@ -165,7 +165,7 @@ public class SceneController : MonoBehaviour
 
     static public void SwitchToOpenWorld()
     {
-        entities.Clear();
+        entities.Clear();   
         localPlayer.inCombat = false;
         SceneManager.LoadScene("OpenWorldTest");
     }
