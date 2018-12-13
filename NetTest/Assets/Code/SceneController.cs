@@ -27,6 +27,8 @@ public class SceneController : MonoBehaviour
             Destroy(gameObject);
         else
             SceneController.instance = this;
+
+        localPlayer = GameObject.Find("TestPlayer").GetComponent<LocalPlayer>();
     }
 
     // Start is called before the first frame update
@@ -36,7 +38,6 @@ public class SceneController : MonoBehaviour
         entityLayer = GameObject.Find("Entities").GetComponent<Tilemap>();
         wallLayer = GameObject.Find("Wall").GetComponent<Tilemap>();
 
-        localPlayer = GameObject.Find("TestPlayer").GetComponent<LocalPlayer>();
 
         entities = new List<Entity>();
         entityPackets = new Queue<EntityPacket>();
