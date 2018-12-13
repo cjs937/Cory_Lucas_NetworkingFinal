@@ -224,11 +224,11 @@ void ServerState::handlePlayerBattle(PlayerData* _player1, PlayerData* _player2)
 		}
 		else if (_player2->currentAttack == 1)
 		{
-			p1Win = true;
+			p2Win = true;
 		}
 		else
 		{
-			p2Win = true;
+			p1Win = true;
 		}
 	}
 	else if (_player1->currentAttack == 1) //paper
