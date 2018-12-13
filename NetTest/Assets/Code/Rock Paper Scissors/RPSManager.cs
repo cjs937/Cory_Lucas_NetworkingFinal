@@ -89,7 +89,7 @@ public class RPSManager : MonoBehaviour
                 if (opponent.currentLives <= 0)
                     endGame(false);
 
-                displayAttacks(isDraw, player.currentAttack.type, true);
+                StartCoroutine(displayAttacks(isDraw, player.currentAttack.type, true));
             }
             else
             {
@@ -98,7 +98,7 @@ public class RPSManager : MonoBehaviour
                 if (player.currentLives <= 0)
                     endGame(false);
 
-                displayAttacks(isDraw, player.currentAttack.type, false);
+                StartCoroutine(displayAttacks(isDraw, player.currentAttack.type, false));        
             }
         }
 
