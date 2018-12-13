@@ -17,8 +17,8 @@ public class RPSPlayer : MonoBehaviour
 
     private void Start()
     {
-        if(selector)
-            selector.gameObject.SetActive(false);
+        //if(selector)
+        //    selector.gameObject.SetActive(false);
     }
 
     // Update is called once per frame
