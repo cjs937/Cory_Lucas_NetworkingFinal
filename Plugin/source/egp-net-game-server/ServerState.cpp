@@ -134,13 +134,15 @@ void ServerState::checkWorldCollisions()
 		{
 			PlayerData* thisPlayer = (*dataThisFrame)[j];
 
-			//if (!thisPlayer)
-			//	continue;
+			if (!thisPlayer)
+				continue;
 
 			if (thisPlayer->inCombat || currentPlayer->id == thisPlayer->id)
 				continue;
 			
-			if (Vector3::Distance(currentPlayer->position, thisPlayer->position) <= 0.25f)
+			float dist = Vector3::Distance(currentPlayer->position, thisPlayer->position);
+
+			if (dist <= currentPlayer->collisionRadius)
 			{
 				std::cout << "works\n";
 				

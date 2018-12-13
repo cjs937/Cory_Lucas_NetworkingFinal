@@ -114,10 +114,6 @@ public class NetworkManager : MonoBehaviour
 
             if (entityUpdatesWaiting > 0)
             {
-                //TODO:
-                // loop through all updates
-                // if we have that entity, update it
-                // if we don't, create it
                 for (int i = 0; i < entityUpdatesWaiting; i++)
                 { 
                     //Debug.Log("Update Network Player");
@@ -173,7 +169,6 @@ public class NetworkManager : MonoBehaviour
             }
             if (collisionUpdatesWaiting > 0)
             {
-                Debug.Log("We have " + collisionUpdatesWaiting + " collision updates.");
                 for (int i = 0; i < collisionUpdatesWaiting; i++)
                 {
                     Guid player1Guid;

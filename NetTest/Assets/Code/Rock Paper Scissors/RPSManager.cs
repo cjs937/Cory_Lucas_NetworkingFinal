@@ -48,7 +48,7 @@ public class RPSManager : MonoBehaviour
     public void beginTurn()
     {
         player.beginTurn();
-        opponent.beginTurn();
+        //opponent.beginTurn();
         selectionStage = true;
         countdown = 20;
         countdownText.gameObject.SetActive(true);
