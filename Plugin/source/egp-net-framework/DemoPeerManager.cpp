@@ -73,7 +73,7 @@ int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const uns
 		CombatPlayerData* combatPlayer = new CombatPlayerData();
 
 		combatPlayer->playerData = player;
-		combatPlayer->opponentID;
+		combatPlayer->opponentID = opponentId;
 
 
 		std::lock_guard<std::mutex> lock(DemoPeerManager::dataLock);

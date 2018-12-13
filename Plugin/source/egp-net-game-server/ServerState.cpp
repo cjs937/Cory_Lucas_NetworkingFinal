@@ -34,6 +34,7 @@ void ServerState::updateState()
 	if (elapsedNetworkTime > DemoPeerManager::getInstance()->networkTickRateMS) // TODO: Mutex this
 	{
 		checkWorldCollisions();
+		checkForPlayerBattles();
 
 		//Clear data list
 		std::queue<PlayerData*> unresolvedData; //unresolved means that the data hasn't been used for anything yet
@@ -192,7 +193,7 @@ void ServerState::checkForPlayerBattles()
 
 		for (int j = i + 1; j < pendingAttackers->size(); ++j)
 		{
-			if ((*pendingAttackers)[i]->opponentID == (*pendingAttackers)[i]->playerData->id)
+			if ((*pendingAttackers)[i]->opponentID == (*pendingAttackers)[j]->playerData->id)
 			{
 				handlePlayerBattle((*pendingAttackers)[i]->playerData, (*pendingAttackers)[j]->playerData);
 

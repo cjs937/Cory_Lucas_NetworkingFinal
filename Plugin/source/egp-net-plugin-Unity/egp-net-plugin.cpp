@@ -414,7 +414,7 @@ extern "C"
 	bool sendCombatUpdateToServer(int guidLength, char* guid, Vector3 position, Vector3 destination, float collisionRadius, bool inCombat, int currentAttack, int opponentGuidLength, char* opponentGuid)
 	{
 		RakNet::BitStream bsOut;
-		bsOut.Write((RakNet::MessageID)DemoPeerManager::UPDATE_NETWORK_PLAYER);
+		bsOut.Write((RakNet::MessageID)DemoPeerManager::UPDATE_COMBAT_PLAYER);
 
 		bsOut.Write(guidLength);
 

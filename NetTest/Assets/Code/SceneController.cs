@@ -60,9 +60,6 @@ public class SceneController : MonoBehaviour
         //        //Debug.Log("FIGHT");
         //    }
         //}
-
-        if (Input.GetKeyDown(KeyCode.Space))
-            SwitchToOpenWorld();
     }
 
     public static bool checkWallCollision(Vector3 pos)
