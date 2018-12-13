@@ -118,6 +118,8 @@ public class RPSManager : MonoBehaviour
             rpsUI.youWinText.gameObject.SetActive(true);
         else
             rpsUI.youLoseText.gameObject.SetActive(true);
+
+        StartCoroutine(returnToOpenScene());
     }
 
     IEnumerator timerCountdown()
@@ -183,6 +185,13 @@ public class RPSManager : MonoBehaviour
 
         if(!gameOver)
             beginTurn();
+    }
+
+    IEnumerator returnToOpenScene()
+    {
+        yield return new WaitForSeconds(2f);
+
+        SceneController.SwitchToOpenWorld();
     }
 
     //RPSPlayer getRPSWinner()
