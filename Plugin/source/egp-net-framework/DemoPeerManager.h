@@ -26,6 +26,8 @@ struct CombatPlayerData
 	ClientID opponentID;
 };
 
+typedef std::pair<RakNet::SystemAddress, ClientID> idAdressPair;
+
 // server manager
 class DemoPeerManager : public egpNetPeerManager
 {
@@ -56,6 +58,8 @@ public:
 	std::vector<PlayerData*> pendingPlayerUpdates;
 	std::vector<CombatPlayerData*> pendingAttackers;
 
+	//system address & clientID
+	std::vector<idAdressPair> idAdressPairs;
 	// ctor
 	DemoPeerManager() = default;
 
@@ -94,6 +98,10 @@ public:
 
 	void addPlayerData(PlayerData* _data);
 	void addCombatData(CombatPlayerData* _data);
+	bool setClientIDPair(RakNet::SystemAddress, ClientID _id);
+	idAdressPair getClientIDPair(RakNet::SystemAddress);
+	idAdressPair getClientIDPair(ClientID _id);
+	void onPlayerDisconnect(RakNet::SystemAddress _systemAddress);
 };
 
 

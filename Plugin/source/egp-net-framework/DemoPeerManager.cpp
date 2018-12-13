@@ -47,16 +47,26 @@ int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const uns
 	printf("Updating network player:");
 	{
 		RakNet::BitStream stream(packet->data, packet->length, false);
+		RakNet::BitStream fullStream(packet->data, packet->length, false);
 
-		sendEntity(&stream, mp_peer->GetIndexFromSystemAddress(packet->systemAddress));
-		
 		stream.IgnoreBytes(sizeof(RakNet::MessageID));
 		stream.IgnoreBytes(sizeof(RakNet::Time));
 
 		//ServerState::getInstance()->addPlayerData(&stream);
 		std::lock_guard<std::mutex> lock(DemoPeerManager::dataLock);
 		//pendingPlayerUpdates.push_back(createPlayerFromPacket(&stream));
-		addPlayerData(createPlayerFromPacket(&stream));
+
+		PlayerData* newPlayer = createPlayerFromPacket(&stream);
+
+		if (packet->systemAddress != getClientIDPair(packet->systemAddress).first)
+		{
+
+		}
+		addPlayerData(newPlayer);
+
+		setClientIDPair(packet->systemAddress, newPlayer->id);
+
+		sendEntity(&fullStream, mp_peer->GetIndexFromSystemAddress(packet->systemAddress));
 
 		std::cout << "Done" << std::endl;
 	}
@@ -80,6 +90,8 @@ int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const uns
 		std::lock_guard<std::mutex> lock(DemoPeerManager::dataLock);
 		//pendingAttackers.push_back(combatPlayer);
 		addCombatData(combatPlayer);
+
+		setClientIDPair(packet->systemAddress, combatPlayer->playerData->id);
 
 		break;
 	}
@@ -210,4 +222,56 @@ PlayerData* DemoPeerManager::createPlayerFromPacket(RakNet::BitStream* _entityDa
 	//	destination.x, destination.y, destination.z);
 
 	return newData;
+}
+
+void DemoPeerManager::onPlayerDisconnect(RakNet::SystemAddress _systemAddress)
+{
+	idAdressPair idPair = getClientIDPair(_systemAddress);
+
+	PlayerData loopCloser;
+
+	loopCloser.id = idPair.second;
+}
+
+bool DemoPeerManager::setClientIDPair(RakNet::SystemAddress _systemAddress, ClientID _id)
+{
+	for (int i = 0; i < idAdressPairs.size(); ++i)
+	{
+		idAdressPair currentPair = idAdressPairs[i];
+
+		if (currentPair.first == _systemAddress)// strcmp(currentPair.first, _systemAddress))//if this address is already in the list
+		{
+			if (currentPair.second == _id) //if id is as well
+				return false;
+
+			idAdressPairs[i].second = _id;
+			return true;
+		}
+	}
+
+	idAdressPair newPair(_systemAddress, _id);
+
+	idAdressPairs.push_back(newPair);
+
+	return true;
+}
+
+idAdressPair DemoPeerManager::getClientIDPair(RakNet::SystemAddress _systemAddress)
+{
+	for (int i = 0; i < idAdressPairs.size(); ++i)
+	{
+		idAdressPair currentPair = idAdressPairs[i];
+
+		if ((currentPair.first == _systemAddress))
+		{
+			return currentPair;
+		}
+	}
+
+	return idAdressPair(nullptr, ClientID());
+}
+
+idAdressPair DemoPeerManager::getClientIDPair(ClientID _id)
+{
+
 }
