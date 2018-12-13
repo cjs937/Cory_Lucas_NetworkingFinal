@@ -135,7 +135,7 @@ void ServerState::checkWorldCollisions()
 		{
 			PlayerData* thisPlayer = (*dataThisFrame)[j];
 
-			if (!thisPlayer)
+			if (thisPlayer == NULL)
 				continue;
 
 			if (thisPlayer->inCombat || currentPlayer->id == thisPlayer->id)

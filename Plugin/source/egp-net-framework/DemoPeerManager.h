@@ -91,6 +91,9 @@ public:
 	///Assumes latency data is next in stream. MessageID and any other previous data must be stripped
 	///</summary>
 	static RakNet::Time calcLatency(RakNet::BitStream& _stream); 
+
+	void addPlayerData(PlayerData* _data);
+	void addCombatData(CombatPlayerData* _data);
 };
 
 

@@ -11,11 +11,13 @@ public class DelayCombat : MonoBehaviour
     {
         defaultRadius = SceneController.localPlayer.collisionRadius;
         SceneController.localPlayer.collisionRadius = -1;
+
+        StartCoroutine(combatDelay());
     }
 
     IEnumerator combatDelay()
     {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(4f);
 
         SceneController.localPlayer.collisionRadius = defaultRadius;
     }

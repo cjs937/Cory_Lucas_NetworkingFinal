@@ -55,7 +55,8 @@ int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const uns
 
 		//ServerState::getInstance()->addPlayerData(&stream);
 		std::lock_guard<std::mutex> lock(DemoPeerManager::dataLock);
-		pendingPlayerUpdates.push_back(createPlayerFromPacket(&stream));
+		//pendingPlayerUpdates.push_back(createPlayerFromPacket(&stream));
+		addPlayerData(createPlayerFromPacket(&stream));
 
 		std::cout << "Done" << std::endl;
 	}
@@ -77,7 +78,8 @@ int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const uns
 
 
 		std::lock_guard<std::mutex> lock(DemoPeerManager::dataLock);
-		pendingAttackers.push_back(combatPlayer);
+		//pendingAttackers.push_back(combatPlayer);
+		addCombatData(combatPlayer);
 
 		break;
 	}
@@ -87,6 +89,42 @@ int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const uns
 	}
 
 	return 0;
+}
+
+void DemoPeerManager::addPlayerData(PlayerData* _data)
+{
+	for (int i = 0; i < pendingPlayerUpdates.size(); ++i)
+	{
+		if (pendingPlayerUpdates[i]->id == _data->id)
+		{
+			delete pendingPlayerUpdates[i];
+
+			pendingPlayerUpdates[i] = _data;
+
+			return;
+		}
+	}
+
+	//if id was not found in list
+	pendingPlayerUpdates.push_back(_data);
+}
+
+void DemoPeerManager::addCombatData(CombatPlayerData* _data)
+{
+	for (int i = 0; i < pendingAttackers.size(); ++i)
+	{
+		if (pendingAttackers[i]->playerData->id == _data->playerData->id)
+		{
+			delete pendingAttackers[i];
+
+			pendingAttackers[i] = _data;
+
+			return;
+		}
+	}
+
+	//if id was not found in list
+	pendingAttackers.push_back(_data);
 }
 
 void DemoPeerManager::sendEntity(RakNet::BitStream* bs, int peer) const
