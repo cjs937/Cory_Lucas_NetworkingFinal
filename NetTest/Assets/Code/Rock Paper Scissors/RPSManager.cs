@@ -68,11 +68,13 @@ public class RPSManager : MonoBehaviour
 
     void fireAttacks()
     {
+        Debug.Log("Firing Attacks");
         NetworkManager.SendCombatInfo(SceneController.localPlayer, player.currentAttack.type, opponentGuid);
     }
 
     public void recieveRoundWinner(Guid _winnerID, bool isDraw)
     {
+        Debug.Log("Round Winner Recieved");
         if (gameOver)
             return;
 

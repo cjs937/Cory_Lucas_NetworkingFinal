@@ -347,6 +347,7 @@ extern "C"
 			{
 				bsIn.Read(update->winnerGuid[i]);
 			}
+			update->winnerGuid[update->winnerGuidLength];
 
 			// Player 2
 			bsIn.Read(update->loserGuidLength);
@@ -356,6 +357,7 @@ extern "C"
 			{
 				bsIn.Read(update->loserGuid[i]);
 			}
+			update->loserGuid[update->loserGuidLength];
 
 			bsIn.Read(update->draw);
 
