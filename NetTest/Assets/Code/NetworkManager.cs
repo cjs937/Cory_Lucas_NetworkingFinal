@@ -217,44 +217,45 @@ public class NetworkManager : MonoBehaviour
             if (roundWinUpdatesWaiting > 0 && SceneController.localPlayer.inCombat)
             {
                 Debug.Log("We have " + roundWinUpdatesWaiting + " roundwin updates.");
-
-                Guid winnerGuid;
-                int winnerGuidLength = 0;
-                IntPtr winnerGuidReturn = IntPtr.Zero;
-
-                Guid loserGuid;
-                int loserGuidLength = 0;
-                IntPtr loserGuidReturn = IntPtr.Zero;
-
-                bool isDraw = false;
-
                 for (int i = 0; i < roundWinUpdatesWaiting; i++)
                 {
+                    Guid winnerGuid;
+                    int winnerGuidLength = 0;
+                    IntPtr winnerGuidReturn = IntPtr.Zero;
+
+                    Guid loserGuid;
+                    int loserGuidLength = 0;
+                    IntPtr loserGuidReturn = IntPtr.Zero;
+
+                    bool isDraw = false;
+
+
                     if (!getNextRoundWinUpdate(ref winnerGuidLength, out winnerGuidReturn, ref loserGuidLength, out loserGuidReturn, ref isDraw))
                     {
                         continue;
                     }
+
+
+                    byte[] guidBytes = new byte[winnerGuidLength];
+                    Marshal.Copy(winnerGuidReturn, guidBytes, 0, winnerGuidLength);
+
+                    winnerGuid = bytesToGuid(guidBytes, 0, winnerGuidLength);
+
+                    guidBytes = new byte[loserGuidLength];
+                    Marshal.Copy(loserGuidReturn, guidBytes, 0, loserGuidLength);
+
+                    loserGuid = bytesToGuid(guidBytes, 0, loserGuidLength);
+
+                    if (winnerGuid == SceneController.localPlayer.identifier || loserGuid == SceneController.localPlayer.identifier)
+                    {
+                        RPSManager.instance.recieveRoundWinner(winnerGuid, isDraw);
+                    }
+
+                    //TODO:
+                    // loop through all updates
+                    // if any of them are ours, pass that info to rps manager then
+                    // delete all other updates, we can only be in one combat
                 }
-
-                byte[] guidBytes = new byte[winnerGuidLength];
-                Marshal.Copy(winnerGuidReturn, guidBytes, 0, winnerGuidLength);
-
-                winnerGuid = bytesToGuid(guidBytes, 0, winnerGuidLength);
-
-                guidBytes = new byte[loserGuidLength];
-                Marshal.Copy(loserGuidReturn, guidBytes, 0, loserGuidLength);
-
-                loserGuid = bytesToGuid(guidBytes, 0, loserGuidLength);
-
-                if (winnerGuid == SceneController.localPlayer.identifier || loserGuid == SceneController.localPlayer.identifier)
-                {
-                    RPSManager.instance.recieveRoundWinner(winnerGuid, isDraw);
-                }
-
-                //TODO:
-                // loop through all updates
-                // if any of them are ours, pass that info to rps manager then
-                // delete all other updates, we can only be in one combat
             }
         }
     }

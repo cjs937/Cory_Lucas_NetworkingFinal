@@ -363,7 +363,7 @@ extern "C"
 
 			roundWinUpdates->push(update);
 
-			return (int)DemoPeerManager::PLAYER_COLLISION;
+			return (int)DemoPeerManager::PLAYER_WIN_ROUND;
 		}
 		break;
 		default:
