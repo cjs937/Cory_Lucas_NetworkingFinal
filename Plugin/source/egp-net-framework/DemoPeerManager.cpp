@@ -15,6 +15,7 @@
 #include <mutex>
 #include "../egp-net-game-server/ServerState.h"
 #include "PlayerData.h"
+#include <algorithm>
 
 int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const unsigned int packetIndex)
 {
@@ -24,6 +25,7 @@ int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const uns
 	{
 	case ID_REMOTE_DISCONNECTION_NOTIFICATION:
 		printf("Another client has disconnected.\n");
+		//onPlayerDisconnect(packet->systemAddress);
 		break;
 	case ID_REMOTE_CONNECTION_LOST:
 		printf("Another client has lost the connection.\n");
@@ -38,7 +40,7 @@ int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const uns
 		printf("The server is full.\n");
 		break;
 	case ID_DISCONNECTION_NOTIFICATION:
-		
+		onPlayerDisconnect(packet->systemAddress);
 		break;
 	case ID_CONNECTION_LOST:
 		
@@ -52,19 +54,24 @@ int DemoPeerManager::ProcessPacket(const RakNet::Packet *const packet, const uns
 		stream.IgnoreBytes(sizeof(RakNet::MessageID));
 		stream.IgnoreBytes(sizeof(RakNet::Time));
 
-		//ServerState::getInstance()->addPlayerData(&stream);
-		std::lock_guard<std::mutex> lock(DemoPeerManager::dataLock);
-		//pendingPlayerUpdates.push_back(createPlayerFromPacket(&stream));
-
 		PlayerData* newPlayer = createPlayerFromPacket(&stream);
 
-		if (packet->systemAddress != getClientIDPair(packet->systemAddress).first)
+		//if playerdata id from packet client is different from id at address of packet ignore it
+		if (!hasClientIDPair(packet->systemAddress))
 		{
-
+			setClientIDPair(packet->systemAddress, newPlayer->id);
 		}
-		addPlayerData(newPlayer);
+		else if (!(newPlayer->id == getClientIDPair(packet->systemAddress).second))
+		{
+			std::cout << "OldPacketonmywrist\n";
 
-		setClientIDPair(packet->systemAddress, newPlayer->id);
+			delete newPlayer;
+
+			break;
+		}
+
+		std::lock_guard<std::mutex> lock(DemoPeerManager::dataLock);
+		addPlayerData(newPlayer);
 
 		sendEntity(&fullStream, mp_peer->GetIndexFromSystemAddress(packet->systemAddress));
 
@@ -226,11 +233,14 @@ PlayerData* DemoPeerManager::createPlayerFromPacket(RakNet::BitStream* _entityDa
 
 void DemoPeerManager::onPlayerDisconnect(RakNet::SystemAddress _systemAddress)
 {
-	idAdressPair idPair = getClientIDPair(_systemAddress);
+	removeFromIDPairList(_systemAddress);
 
-	PlayerData loopCloser;
+	std::cout << "Hes outta there\n";
+	//idAdressPair idPair = getClientIDPair(_systemAddress);
 
-	loopCloser.id = idPair.second;
+	//PlayerData loopCloser;
+
+	//loopCloser.id = idPair.second;
 }
 
 bool DemoPeerManager::setClientIDPair(RakNet::SystemAddress _systemAddress, ClientID _id)
@@ -271,7 +281,32 @@ idAdressPair DemoPeerManager::getClientIDPair(RakNet::SystemAddress _systemAddre
 	return idAdressPair(nullptr, ClientID());
 }
 
-idAdressPair DemoPeerManager::getClientIDPair(ClientID _id)
+bool DemoPeerManager::hasClientIDPair(RakNet::SystemAddress _address)
 {
+	for (int i = 0; i < idAdressPairs.size(); ++i)
+	{
+		idAdressPair currentPair = idAdressPairs[i];
 
+		if ((currentPair.first == _address))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool DemoPeerManager::removeFromIDPairList(RakNet::SystemAddress _address)
+{
+	for (int i = 0; i < idAdressPairs.size(); ++i)
+	{
+		if (idAdressPairs[i].first == _address)
+		{
+			idAdressPairs.erase(idAdressPairs.begin() + i);
+
+			return true;
+		}
+	}
+
+	return false;
 }

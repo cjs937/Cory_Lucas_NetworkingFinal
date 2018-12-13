@@ -99,9 +99,10 @@ public:
 	void addPlayerData(PlayerData* _data);
 	void addCombatData(CombatPlayerData* _data);
 	bool setClientIDPair(RakNet::SystemAddress, ClientID _id);
+	bool hasClientIDPair(RakNet::SystemAddress _address);
 	idAdressPair getClientIDPair(RakNet::SystemAddress);
-	idAdressPair getClientIDPair(ClientID _id);
 	void onPlayerDisconnect(RakNet::SystemAddress _systemAddress);
+	bool removeFromIDPairList(RakNet::SystemAddress _address);
 };
 
 
