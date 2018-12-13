@@ -256,6 +256,7 @@ public class NetworkManager : MonoBehaviour
                     // if any of them are ours, pass that info to rps manager then
                     // delete all other updates, we can only be in one combat
                 }
+                roundWinUpdatesWaiting = 0;
             }
         }
     }
